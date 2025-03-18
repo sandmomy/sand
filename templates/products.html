@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Productos - Tienda Web{% endblock %}
+
+{% block content %}
+    <h1>Nuestros Productos</h1>
+    
+    <section class="category-filter">
+        <h2>Categorías</h2>
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-category="all">Todos</button>
+            <button class="filter-btn" data-category="electronics">Electrónica</button>
+            <button class="filter-btn" data-category="clothing">Ropa</button>
+            <button class="filter-btn" data-category="home">Hogar</button>
+        </div>
+    </section>
+    
+    <section class="product-grid">
+        <!-- Electrónica -->
+        <div class="product-card" data-category="electronics">
+            <div class="product-image placeholder"></div>
+            <h3>Smartphone XYZ</h3>
+            <p class="product-description">Smartphone de última generación con cámara de alta resolución y batería de larga duración.</p>
+            <p class="product-price">€599.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <div class="product-card" data-category="electronics">
+            <div class="product-image placeholder"></div>
+            <h3>Portátil Pro</h3>
+            <p class="product-description">Potente portátil para profesionales con procesador de última generación y pantalla de alta resolución.</p>
+            <p class="product-price">€1299.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <div class="product-card" data-category="electronics">
+            <div class="product-image placeholder"></div>
+            <h3>Auriculares Inalámbricos</h3>
+            <p class="product-description">Auriculares con cancelación de ruido y batería de larga duración para una experiencia auditiva inmersiva.</p>
+            <p class="product-price">€149.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <!-- Ropa -->
+        <div class="product-card" data-category="clothing">
+            <div class="product-image placeholder"></div>
+            <h3>Camiseta Premium</h3>
+            <p class="product-description">Camiseta de algodón 100% orgánico, suave y duradera. Disponible en varios colores.</p>
+            <p class="product-price">€29.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <div class="product-card" data-category="clothing">
+            <div class="product-image placeholder"></div>
+            <h3>Jeans Clásicos</h3>
+            <p class="product-description">Jeans de alta calidad con un corte clásico que nunca pasa de moda. Confortables y duraderos.</p>
+            <p class="product-price">€79.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <div class="product-card" data-category="clothing">
+            <div class="product-image placeholder"></div>
+            <h3>Zapatillas Deportivas</h3>
+            <p class="product-description">Zapatillas deportivas con tecnología de amortiguación avanzada para un máximo confort durante todo el día.</p>
+            <p class="product-price">€89.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <!-- Hogar -->
+        <div class="product-card" data-category="home">
+            <div class="product-image placeholder"></div>
+            <h3>Lámpara Moderna</h3>
+            <p class="product-description">Lámpara de diseño moderno que se adapta a cualquier decoración. Iluminación LED de bajo consumo.</p>
+            <p class="product-price">€59.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <div class="product-card" data-category="home">
+            <div class="product-image placeholder"></div>
+            <h3>Juego de Sábanas</h3>
+            <p class="product-description">Juego de sábanas de algodón egipcio de 400 hilos. Suavidad y frescura para un descanso óptimo.</p>
+            <p class="product-price">€49.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+        
+        <div class="product-card" data-category="home">
+            <div class="product-image placeholder"></div>
+            <h3>Set de Utensilios de Cocina</h3>
+            <p class="product-description">Set completo de utensilios de cocina de acero inoxidable. Duraderos y resistentes al calor.</p>
+            <p class="product-price">€79.99</p>
+            <button class="btn">Añadir al Carrito</button>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .category-filter {
+        margin-bottom: 30px;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .filter-btn {
+        padding: 8px 15px;
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover {
+        background-color: #e8e8e8;
+    }
+    
+    .filter-btn.active {
+        background-color: #e8491d;
+        color: white;
+        border-color: #e8491d;
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .product-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .product-image.placeholder {
+        height: 150px;
+        background-color: #f4f4f4;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    
+    .product-description {
+        color: #666;
+        margin-bottom: 15px;
+        min-height: 80px;
+    }
+    
+    .product-price {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #e8491d;
+        margin-bottom: 15px;
+    }
+    
+    h3 {
+        color: #35424a;
+        margin-bottom: 10px;
+    }
+    
+    .hidden {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const productCards = document.querySelectorAll('.product-card');
+        
+        // Filtrar productos
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                
+                // Actualizar estado activo de los botones
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Mostrar/ocultar productos según la categoría
+                productCards.forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-category') === category) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Funcionalidad de los botones "Añadir al Carrito"
+        const addToCartButtons = document.querySelectorAll('.product-card .btn');
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productCard = this.closest('.product-card');
+                const productName = productCard.querySelector('h3').textContent;
+                
+                alert(`¡${productName} añadido al carrito!`);
+            });
+        });
+    });
+</script>
+{% endblock %}

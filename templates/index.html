@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Tienda Web{% endblock %}
+
+{% block content %}
+    <h1>Bienvenido a Tienda Web</h1>
+    
+    <section>
+        <h2>Productos Destacados</h2>
+        <div class="featured-products">
+            <div class="product">
+                <h3>Producto 1</h3>
+                <p>Descripción del producto 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <a href="/products" class="btn">Ver detalles</a>
+            </div>
+            <div class="product">
+                <h3>Producto 2</h3>
+                <p>Descripción del producto 2. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                <a href="/products" class="btn">Ver detalles</a>
+            </div>
+            <div class="product">
+                <h3>Producto 3</h3>
+                <p>Descripción del producto 3. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+                <a href="/products" class="btn">Ver detalles</a>
+            </div>
+        </div>
+    </section>
+    
+    <section>
+        <h2>Sobre Nosotros</h2>
+        <p>Somos una tienda especializada en productos de alta calidad. Nos comprometemos a ofrecer el mejor servicio y los mejores productos a nuestros clientes.</p>
+        <a href="/about" class="btn">Más información</a>
+    </section>
+    
+    <section>
+        <h2>Contáctanos</h2>
+        <p>¿Tienes alguna pregunta? No dudes en ponerte en contacto con nosotros.</p>
+        <a href="/contact" class="btn">Contactar</a>
+    </section>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .featured-products {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .product {
+        flex: 1;
+        min-width: 250px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    
+    section {
+        margin-bottom: 30px;
+    }
+    
+    h1, h2 {
+        color: #35424a;
+    }
+    
+    h3 {
+        color: #e8491d;
+    }
+</style>
+{% endblock %}
