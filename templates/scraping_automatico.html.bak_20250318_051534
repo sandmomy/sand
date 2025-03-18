@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Automático con Archon MCP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .card-title {
+            margin: 0;
+            color: #0c7cd5;
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        .form-control, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #0c7cd5;
+            box-shadow: 0 0 0 0.2rem rgba(12, 124, 213, 0.25);
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #0c7cd5;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0b6fc0;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 18px;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .warning {
+            color: orange;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-active {
+            background-color: #28a745;
+        }
+        .status-inactive {
+            background-color: #dc3545;
+        }
+        .progress-container {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin: 15px 0;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background-color: #0c7cd5;
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .progress-text {
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+        .log-container {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .log-entry.info { color: #0c7cd5; }
+        .log-entry.success { color: #28a745; }
+        .log-entry.warning { color: #ffc107; }
+        .log-entry.error { color: #dc3545; }
+        .urls-container {
+            margin-top: 15px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        .url-item {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        .url-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .url-category {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .url-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .url-actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .url-title {
+            font-weight: bold;
+        }
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-color: #ddd;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: -1px;
+            color: #0c7cd5;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #0c7cd5;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0c7cd5;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        /* Estilos específicos para el interruptor central */
+        .toggle-container {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .toggle-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .toggle-button {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #0c7cd5, #0b6fc0);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 8px 25px rgba(12, 124, 213, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        .toggle-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(12, 124, 213, 0.5);
+        }
+        .toggle-button.active {
+            background: linear-gradient(145deg, #28a745, #218838);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+        .toggle-button.inactive {
+            background: linear-gradient(145deg, #dc3545, #c82333);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        }
+        .toggle-button i {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .toggle-status {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        /* Estilos para el chat de búsqueda específica */
+        .chat-container {
+            display: none;
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .chat-header {
+            padding: 15px 20px;
+            background-color: #0c7cd5;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px 0 0 6px;
+            font-size: 16px;
+        }
+        .chat-input button {
+            border-radius: 0 6px 6px 0;
+            padding: 12px 20px;
+            background-color: #0c7cd5;
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        .user-message, .bot-message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 12px;
+        }
+        .user-message {
+            background-color: #0c7cd5;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+        .bot-message {
+            background-color: #e9ecef;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+        
+        /* Estilos para la sección de modos */
+        .mode-selector {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .mode-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .mode-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .mode-option {
+            flex: 1;
+            max-width: 300px;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .mode-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        .mode-option.active {
+            border-color: #0c7cd5;
+            background-color: rgba(12, 124, 213, 0.05);
+        }
+        .mode-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #0c7cd5;
+        }
+        .mode-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .mode-description {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Estilos para exportación de datos */
+        .export-section {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .export-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .export-format {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+        }
+        .export-format:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-color: #0c7cd5;
+        }
+        .export-format i {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .export-json i { color: #0c7cd5; }
+        .export-csv i { color: #28a745; }
+        .export-txt i { color: #6c757d; }
+        .export-format h4 {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .export-format p {
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Scraping Automático con Archon MCP</h1>
+        
+        <!-- Gran botón central de toggle -->
+        <div class="toggle-container">
+            <h2 class="toggle-title">Control de Scraping Automático</h2>
+            <button id="main-toggle" class="toggle-button inactive">
+                <i class="fas fa-power-off"></i>
+                Iniciar
+            </button>
+            <div class="toggle-status">
+                Estado: <span id="toggle-status-text" class="status-badge status-inactive">Inactivo</span>
+            </div>
+        </div>
+        
+        <!-- Selector de modo -->
+        <div class="mode-selector">
+            <h2 class="mode-title">Modo de Scraping</h2>
+            <div class="mode-options">
+                <div class="mode-option active" id="mode-general">
+                    <div class="mode-icon"><i class="fas fa-globe"></i></div>
+                    <div class="mode-name">Modo General</div>
+                    <div class="mode-description">Busca automáticamente información relevante sobre Ibiza analizando las primeras 5 páginas de resultados.</div>
+                </div>
+                <div class="mode-option" id="mode-specific">
+                    <div class="mode-icon"><i class="fas fa-search"></i></div>
+                    <div class="mode-name">Modo Específico</div>
+                    <div class="mode-description">Define búsquedas específicas para encontrar información sobre temas concretos de Ibiza.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat para modo específico -->
+        <div class="chat-container" id="specific-chat">
+            <div class="chat-header">
+                <div>Chat de Búsqueda Específica</div>
+                <button id="close-chat" class="btn btn-sm btn-light">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="bot-message">
+                    Hola, soy tu asistente de scraping. ¿Sobre qué tema de Ibiza quieres buscar información? Por ejemplo: "mejores playas", "restaurantes con vistas al mar", "eventos en agosto"...
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chat-input-field" placeholder="Escribe tu tema de búsqueda...">
+                <button id="chat-send-button"><i class="fas fa-paper-plane"></i> Enviar</button>
+            </div>
+        </div>
+        
+        <!-- Panel de información y estadísticas -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-bar me-2"></i> Estadísticas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-pages">0</div>
+                                <div class="stat-label">Páginas Analizadas</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-content">0</div>
+                                <div class="stat-label">Elementos Extraídos</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-sources">0</div>
+                                <div class="stat-label">Fuentes</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-categories">0</div>
+                                <div class="stat-label">Categorías</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container mt-4">
+                            <div id="progress-bar" class="progress-bar" style="width: 0%;">
+                                <div class="progress-text">0%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <span>Última ejecución: <strong id="last-execution">Nunca</strong></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Panel de URLs procesadas -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-link me-2"></i> URLs Procesadas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="processed-urls" class="url-list">
+                            <div class="text-center text-muted">No hay URLs procesadas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <!-- Panel de Logs -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-terminal me-2"></i> Logs</h3>
+                        <button id="clear-logs-btn" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-trash-alt"></i> Limpiar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="log-container" class="log-container">
+                            <div class="log-entry info">Sistema inicializado y listo para comenzar...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección de exportación de datos -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-file-export me-2"></i> Exportar Datos para Otras IAs</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Selecciona un formato para descargar los datos extraídos y utilizarlos en otros sistemas:</p>
+                        
+                        <div class="export-options">
+                            <div class="export-format export-json" id="export-json">
+                                <i class="fas fa-file-code"></i>
+                                <h4>JSON</h4>
+                                <p>Formato de datos estructurado</p>
+                            </div>
+                            <div class="export-format export-csv" id="export-csv">
+                                <i class="fas fa-file-csv"></i>
+                                <h4>CSV</h4>
+                                <p>Compatible con hojas de cálculo</p>
+                            </div>
+                            <div class="export-format export-txt" id="export-txt">
+                                <i class="fas fa-file-alt"></i>
+                                <h4>TXT</h4>
+                                <p>Texto plano para cualquier sistema</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Acciones rápidas -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-bolt me-2"></i> Acciones Rápidas</h3>
+            </div>
+            <div class="card-body">
+                <div class="buttons-row">
+                    <button id="schedule-btn" class="btn btn-primary">
+                        <i class="fas fa-calendar-alt me-2"></i> Programar Scraping
+                    </button>
+                    <button id="test-btn" class="btn btn-info">
+                        <i class="fas fa-vial me-2"></i> Ejecutar Prueba
+                    </button>
+                    <button id="stop-btn" class="btn btn-danger" disabled>
+                        <i class="fas fa-stop-circle me-2"></i> Detener Proceso
+                    </button>
+                    <button id="config-btn" class="btn btn-secondary">
+                        <i class="fas fa-cog me-2"></i> Configuración
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const mainToggleBtn = document.getElementById('main-toggle');
+        const toggleStatusText = document.getElementById('toggle-status-text');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.querySelector('.progress-text');
+        const modeGeneral = document.getElementById('mode-general');
+        const modeSpecific = document.getElementById('mode-specific');
+        const specificChat = document.getElementById('specific-chat');
+        const closeChat = document.getElementById('close-chat');
+        const chatInput = document.getElementById('chat-input-field');
+        const chatSendButton = document.getElementById('chat-send-button');
+        const chatMessages = document.getElementById('chat-messages');
+        const logContainer = document.getElementById('log-container');
+        const clearLogsBtn = document.getElementById('clear-logs-btn');
+        const processedUrls = document.getElementById('processed-urls');
+        const totalPages = document.getElementById('total-pages');
+        const totalContent = document.getElementById('total-content');
+        const totalSources = document.getElementById('total-sources');
+        const totalCategories = document.getElementById('total-categories');
+        const lastExecution = document.getElementById('last-execution');
+        const scheduleBtn = document.getElementById('schedule-btn');
+        const testBtn = document.getElementById('test-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const configBtn = document.getElementById('config-btn');
+        const exportJSON = document.getElementById('export-json');
+        const exportCSV = document.getElementById('export-csv');
+        const exportTXT = document.getElementById('export-txt');
+        
+        // Variables de estado
+        let isScraperActive = false;
+        let currentMode = 'general';
+        let currentProgress = 0;
+        let processedUrlsList = [];
+        
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar estado actual con el servidor
+            checkStatus();
+            
+            // Configurar eventos
+            setupEventListeners();
+            
+            // Añadir log inicial
+            addLog('Sistema inicializado correctamente', 'info');
+        });
+        
+        // Configurar listeners de eventos
+        function setupEventListeners() {
+            // Toggle principal de encendido/apagado
+            mainToggleBtn.addEventListener('click', function() {
+                toggleScraper();
+            });
+            
+            // Selector de modos
+            modeGeneral.addEventListener('click', function() {
+                setMode('general');
+            });
+            
+            modeSpecific.addEventListener('click', function() {
+                setMode('specific');
+            });
+            
+            // Chat específico
+            closeChat.addEventListener('click', function() {
+                specificChat.style.display = 'none';
+            });
+            
+            chatSendButton.addEventListener('click', function() {
+                sendChatMessage();
+            });
+            
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+            
+            // Botones de acción
+            clearLogsBtn.addEventListener('click', function() {
+                clearLogs();
+            });
+            
+            scheduleBtn.addEventListener('click', function() {
+                openScheduleDialog();
+            });
+            
+            testBtn.addEventListener('click', function() {
+                runTest();
+            });
+            
+            stopBtn.addEventListener('click', function() {
+                stopScraping();
+            });
+            
+            configBtn.addEventListener('click', function() {
+                openConfigDialog();
+            });
+            
+            // Exportación de datos
+            exportJSON.addEventListener('click', function() {
+                exportData('json');
+            });
+            
+            exportCSV.addEventListener('click', function() {
+                exportData('csv');
+            });
+            
+            exportTXT.addEventListener('click', function() {
+                exportData('txt');
+            });
+        }
+        
+        // Verificar estado del scraper con el servidor
+        function checkStatus() {
+            addLog('Verificando estado del scraper...', 'info');
+            
+            // En un entorno real, esto sería una llam

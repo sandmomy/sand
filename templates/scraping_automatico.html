@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Automático con Archon MCP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            font-weight: 500;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .card-title {
+            margin: 0;
+            color: #0c7cd5;
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        .form-control, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #0c7cd5;
+            box-shadow: 0 0 0 0.2rem rgba(12, 124, 213, 0.25);
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #0c7cd5;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0b6fc0;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 18px;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .warning {
+            color: orange;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-active {
+            background-color: #28a745;
+        }
+        .status-inactive {
+            background-color: #dc3545;
+        }
+        .progress-container {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin: 15px 0;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background-color: #0c7cd5;
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .progress-text {
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+        .log-container {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .log-entry.info { color: #0c7cd5; }
+        .log-entry.success { color: #28a745; }
+        .log-entry.warning { color: #ffc107; }
+        .log-entry.error { color: #dc3545; }
+        .urls-container {
+            margin-top: 15px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        .url-item {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        .url-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .url-category {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .url-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .url-actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .url-title {
+            font-weight: bold;
+        }
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-color: #ddd;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: -1px;
+            color: #0c7cd5;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #0c7cd5;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0c7cd5;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        /* Estilos específicos para el interruptor central */
+        .toggle-container {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .toggle-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .toggle-button {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #0c7cd5, #0b6fc0);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 8px 25px rgba(12, 124, 213, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        .toggle-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(12, 124, 213, 0.5);
+        }
+        .toggle-button.active {
+            background: linear-gradient(145deg, #28a745, #218838);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+        .toggle-button.inactive {
+            background: linear-gradient(145deg, #dc3545, #c82333);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        }
+        .toggle-button i {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .toggle-status {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        /* Estilos para el chat de búsqueda específica */
+        .chat-container {
+            display: none;
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .chat-header {
+            padding: 15px 20px;
+            background-color: #0c7cd5;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px 0 0 6px;
+            font-size: 16px;
+        }
+        .chat-input button {
+            border-radius: 0 6px 6px 0;
+            padding: 12px 20px;
+            background-color: #0c7cd5;
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        .user-message, .bot-message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 12px;
+        }
+        .user-message {
+            background-color: #0c7cd5;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+        .bot-message {
+            background-color: #e9ecef;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+        
+        /* Estilos para la sección de modos */
+        .mode-selector {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .mode-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .mode-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .mode-option {
+            flex: 1;
+            max-width: 300px;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .mode-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        .mode-option.active {
+            border-color: #0c7cd5;
+            background-color: rgba(12, 124, 213, 0.05);
+        }
+        .mode-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #0c7cd5;
+        }
+        .mode-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .mode-description {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Estilos para exportación de datos */
+        .export-section {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .export-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .export-format {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+        }
+        .export-format:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-color: #0c7cd5;
+        }
+        .export-format i {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .export-json i { color: #0c7cd5; }
+        .export-csv i { color: #28a745; }
+        .export-txt i { color: #6c757d; }
+        .export-xml i { color: #e83e8c; }
+        .export-format h4 {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .export-format p {
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container nav-container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-umbrella-beach me-2"></i> Ibiza Info
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archivos"><i class="fas fa-folder me-1"></i> Archivos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/videos"><i class="fas fa-video me-1"></i> Videos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/imagenes"><i class="fas fa-image me-1"></i> Imágenes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/agente_ia">
+                            <i class="fas fa-robot me-1"></i> Chat IA
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/scraping_automatico">
+                            <i class="fas fa-spider me-1"></i> Scraping Automático
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/test"><i class="fas fa-vial me-1"></i> Test</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="text-center mb-4">Scraping Automático con Archon MCP</h1>
+        
+        <!-- Gran botón central de toggle -->
+        <div class="toggle-container">
+            <h2 class="toggle-title">Control de Scraping Automático</h2>
+            <button id="main-toggle" class="toggle-button inactive">
+                <i class="fas fa-power-off"></i>
+                Iniciar
+            </button>
+            <div class="toggle-status">
+                Estado: <span id="toggle-status-text" class="status-badge status-inactive">Inactivo</span>
+            </div>
+            <div class="info-text mt-3">
+                <small class="text-info">Al activar el scraping, la información recopilada se utilizará para mejorar las respuestas del chatbot sobre Ibiza</small>
+            </div>
+        </div>
+        
+        <!-- Selector de modo -->
+        <div class="mode-selector">
+            <h2 class="mode-title">Modo de Scraping</h2>
+            <div class="mode-options">
+                <div class="mode-option active" id="mode-general">
+                    <div class="mode-icon"><i class="fas fa-globe"></i></div>
+                    <div class="mode-name">Modo General</div>
+                    <div class="mode-description">Busca automáticamente información relevante sobre Ibiza analizando las primeras 5 páginas de resultados.</div>
+                </div>
+                <div class="mode-option" id="mode-specific">
+                    <div class="mode-icon"><i class="fas fa-search"></i></div>
+                    <div class="mode-name">Modo Específico</div>
+                    <div class="mode-description">Define búsquedas específicas para encontrar información sobre temas concretos de Ibiza.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat para modo específico -->
+        <div class="chat-container" id="specific-chat">
+            <div class="chat-header">
+                <div>Chat de Búsqueda Específica</div>
+                <button id="close-chat" class="btn btn-sm btn-light">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="bot-message">
+                    Hola, soy tu asistente de scraping. ¿Sobre qué tema de Ibiza quieres buscar información? Por ejemplo: "mejores playas", "restaurantes con vistas al mar", "eventos en agosto"...
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="specificQueryInput" placeholder="Escribe tu tema de búsqueda...">
+                <button id="chat-send-button"><i class="fas fa-paper-plane"></i> Enviar</button>
+            </div>
+        </div>
+        
+        <!-- Panel de información y estadísticas -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-bar me-2"></i> Estadísticas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-pages">0</div>
+                                <div class="stat-label">Páginas Analizadas</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-content">0</div>
+                                <div class="stat-label">Elementos Extraídos</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-sources">0</div>
+                                <div class="stat-label">Fuentes</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="total-categories">0</div>
+                                <div class="stat-label">Categorías</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container mt-4">
+                            <div id="progress-bar" class="progress-bar" style="width: 0%;">
+                                <div class="progress-text">0%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <span>Última ejecución: <strong id="last-execution">Nunca</strong></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Panel de URLs procesadas -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-link me-2"></i> URLs Procesadas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="processed-urls" class="url-list">
+                            <div class="text-center text-muted">No hay URLs procesadas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <!-- Panel de Logs -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-terminal me-2"></i> Logs</h3>
+                        <button id="clear-logs-btn" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-trash-alt"></i> Limpiar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="log-container" class="log-container">
+                            <div class="log-entry info">Sistema inicializado y listo para comenzar...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección de exportación de datos -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-file-export me-2"></i> Exportar Datos para Otras IAs</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Selecciona un formato para descargar los datos extraídos y utilizarlos en otros sistemas:</p>
+                        
+                        <div class="export-options">
+                            <div class="export-format export-json" id="export-json" onclick="exportData('json')">
+                                <i class="fas fa-file-code"></i>
+                                <h4>JSON</h4>
+                                <p>Formato de datos estructurado</p>
+                            </div>
+                            <div class="export-format export-csv" id="export-csv" onclick="exportData('csv')">
+                                <i class="fas fa-file-csv"></i>
+                                <h4>CSV</h4>
+                                <p>Compatible con hojas de cálculo</p>
+                            </div>
+                            <div class="export-format export-xml" id="export-xml" onclick="exportData('xml')">
+                                <i class="fas fa-file-alt"></i>
+                                <h4>XML</h4>
+                                <p>Formato para intercambio de datos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de búsqueda de prueba -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-search me-2"></i> Búsqueda de Prueba</h3>
+            </div>
+            <div class="card-body">
+                <p>Realiza una búsqueda rápida para probar el funcionamiento del scraper sin activarlo completamente:</p>
+                
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="input-group">
+                            <input type="text" id="testSearchQuery" class="form-control" placeholder="Escribe una consulta de prueba (ej: 'Mejores playas de Ibiza')">
+                            <select id="testSearchMaxResults" class="form-select" style="max-width: 120px;">
+                                <option value="1">1 resultado</option>
+                                <option value="3" selected>3 resultados</option>
+                                <option value="5">5 resultados</option>
+                            </select>
+                            <button class="btn btn-primary" id="btnTestSearch" onclick="runTestSearch()">
+                                <i class="fas fa-search me-1"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resultados de búsqueda -->
+                <div id="testSearchResults" style="display: none;">
+                    <h5 class="mt-3 mb-2">Resultados de búsqueda:</h5>
+                    <div class="alert alert-info mb-3" id="testSearchSummary"></div>
+                    <div class="list-group" id="testSearchResultsList">
+                        <!-- Aquí se mostrarán los resultados -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Acciones rápidas -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-bolt me-2"></i> Acciones Rápidas</h3>
+            </div>
+            <div class="card-body">
+                <div class="buttons-row">
+                    <button id="schedule-btn" class="btn btn-primary">
+                        <i class="fas fa-calendar-alt me-2"></i> Programar Scraping
+                    </button>
+                    <button id="test-btn" class="btn btn-info" onclick="runTest()">
+                        <i class="fas fa-vial me-2"></i> Ejecutar Prueba
+                    </button>
+                    <button id="stop-btn" class="btn btn-danger" disabled>
+                        <i class="fas fa-stop-circle me-2"></i> Detener Proceso
+                    </button>
+                    <button id="config-btn" class="btn btn-secondary">
+                        <i class="fas fa-cog me-2"></i> Configuración
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diálogo Modal de Configuración -->
+    <div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="configModalLabel"><i class="fas fa-cogs me-2"></i>Configuración del Scraper</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="configTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="sources-tab" data-bs-toggle="tab" data-bs-target="#sources" type="button" role="tab" aria-controls="sources" aria-selected="false">Fuentes</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="searches-tab" data-bs-toggle="tab" data-bs-target="#searches" type="button" role="tab" aria-controls="searches" aria-selected="false">Búsquedas</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content p-3" id="configTabsContent">
+                        <!-- Pestaña de configuración general -->
+                        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                            <form id="generalConfigForm">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="maxPages" class="form-label">Páginas máximas por búsqueda</label>
+                                        <input type="number" class="form-control" id="maxPages" min="1" max="20" value="5">
+                                        <div class="form-text">Número máximo de páginas a procesar por cada búsqueda</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="maxDepth" class="form-label">Profundidad máxima</label>
+                                        <input type="number" class="form-control" id="maxDepth" min="1" max="5" value="2">
+                                        <div class="form-text">Nivel de profundidad para seguir enlaces en cada página</div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="updateFrequency" class="form-label">Frecuencia de actualización</label>
+                                        <select class="form-select" id="updateFrequency">
+                                            <option value="hourly">Cada hora</option>
+                                            <option value="daily" selected>Diaria</option>
+                                            <option value="weekly">Semanal</option>
+                                            <option value="biweekly">Quincenal</option>
+                                            <option value="monthly">Mensual</option>
+                                        </select>
+                                        <div class="form-text">Con qué frecuencia se actualizarán las fuentes automáticamente</div>
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="useHeadless" checked>
+                                    <label class="form-check-label" for="useHeadless">Usar navegador sin interfaz (headless)</label>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Pestaña de fuentes -->
+                        <div class="tab-pane fade" id="sources" role="tabpanel" aria-labelledby="sources-tab">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5>Fuentes de información</h5>
+                                <button id="addSourceBtn" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i>Añadir</button>
+                            </div>
+                            <div id="sourcesList" class="list-group">
+                                <!-- Las fuentes se cargarán dinámicamente aquí -->
+                            </div>
+                            <div class="text-muted mt-2">
+                                <small>Estas son las fuentes que serán monitorizadas periódicamente para actualizar la base de conocimiento.</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Pestaña de búsquedas -->
+                        <div class="tab-pane fade" id="searches" role="tabpanel" aria-labelledby="searches-tab">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5>Búsquedas programadas</h5>
+                                <button id="addSearchBtn" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i>Añadir</button>
+                            </div>
+                            <div id="searchesList" class="list-group">
+                                <!-- Las búsquedas se cargarán dinámicamente aquí -->
+                            </div>
+                            <div class="text-muted mt-2">
+                                <small>Estas búsquedas se realizarán periódicamente para mantener actualizada la base de conocimiento.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveConfigBtn">Guardar configuración</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diálogo Modal de Programación -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="scheduleModalLabel"><i class="fas fa-calendar-alt me-2"></i>Programar Scraping</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleForm">
+                        <div class="mb-3">
+                            <label for="scheduleType" class="form-label">Tipo de programación</label>
+                            <select class="form-select" id="scheduleType">
+                                <option value="once">Una vez</option>
+                                <option value="daily">Diariamente</option>
+                                <option value="weekly">Semanalmente</option>
+                                <option value="monthly">Mensualmente</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="datePicker">
+                            <label for="scheduleDate" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="scheduleDate">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="scheduleTime" class="form-label">Hora</label>
+                            <input type="time" class="form-control" id="scheduleTime">
+                        </div>
+                        
+                        <div class="mb-3" id="weekdaySelector" style="display: none;">
+                            <label class="form-label">Día de la semana</label>
+                            <div class="btn-group d-flex" role="group" aria-label="Días de la semana">
+                                <input type="checkbox" class="btn-check" id="dayMon" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="dayMon">L</label>
+                                
+                                <input type="checkbox" class="btn-check" id="dayTue" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="dayTue">M</label>
+                                
+                                <input type="checkbox" class="btn-check" id="dayWed" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="dayWed">X</label>
+                                
+                                <input type="checkbox" class="btn-check" id="dayThu" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="dayThu">J</label>
+                                
+                                <input type="checkbox" class="btn-check" id="dayFri" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="dayFri">V</label>
+                                
+                                <input type="checkbox" class="btn-check" id="daySat" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="daySat">S</label>
+                                
+                                <input type="checkbox" class="btn-check" id="daySun" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="daySun">D</label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="scheduleMode" class="form-label">Modo de scraping</label>
+                            <select class="form-select" id="scheduleMode">
+                                <option value="general">General (Ibiza)</option>
+                                <option value="specific">Específico</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="scheduleQueryContainer" style="display: none;">
+                            <label for="scheduleQuery" class="form-label">Consulta específica</label>
+                            <input type="text" class="form-control" id="scheduleQuery" placeholder="Ejemplo: restaurantes en Ibiza">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveScheduleBtn">Guardar programación</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const mainToggleBtn = document.getElementById('main-toggle');
+        const toggleStatusText = document.getElementById('toggle-status-text');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.querySelector('.progress-text');
+        const modeGeneral = document.getElementById('mode-general');
+        const modeSpecific = document.getElementById('mode-specific');
+        const specificChat = document.getElementById('specific-chat');
+        const closeChat = document.getElementById('close-chat');
+        const specificQueryInput = document.getElementById('specificQueryInput');
+        const chatSendButton = document.getElementById('chat-send-button');
+        const chatMessages = document.getElementById('chat-messages');
+        const logContainer = document.getElementById('log-container');
+        const clearLogsBtn = document.getElementById('clear-logs-btn');
+        const processedUrls = document.getElementById('processed-urls');
+        const totalPages = document.getElementById('total-pages');
+        const totalContent = document.getElementById('total-content');
+        const totalSources = document.getElementById('total-sources');
+        const totalCategories = document.getElementById('total-categories');
+        const lastExecution = document.getElementById('last-execution');
+        const scheduleBtn = document.getElementById('schedule-btn');
+        const testBtn = document.getElementById('test-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const configBtn = document.getElementById('config-btn');
+        const exportJSON = document.getElementById('export-json');
+        const exportCSV = document.getElementById('export-csv');
+        const exportXML = document.getElementById('export-xml');
+        
+        // Variables de estado
+        let isScraperActive = false;
+        let selectedMode = 'general';
+        let currentProgress = 0;
+        let processedUrlsList = [];
+        
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar estado actual con el servidor
+            checkStatus();
+            
+            // Configurar eventos
+            setupEventListeners();
+            
+            // Añadir log inicial
+            addLog('Sistema inicializado correctamente', 'info');
+        });
+        
+        // Configurar listeners de eventos
+        function setupEventListeners() {
+            // Toggle principal de encendido/apagado
+            mainToggleBtn.addEventListener('click', function() {
+                toggleScraper();
+            });
+            
+            // Selector de modos
+            modeGeneral.addEventListener('click', function() {
+                setMode('general');
+            });
+            
+            modeSpecific.addEventListener('click', function() {
+                setMode('specific');
+            });
+            
+            // Chat específico
+            closeChat.addEventListener('click', function() {
+                specificChat.style.display = 'none';
+            });
+            
+            chatSendButton.addEventListener('click', function() {
+                sendChatMessage();
+            });
+            
+            specificQueryInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+            
+            // Botones de acción
+            clearLogsBtn.addEventListener('click', function() {
+                clearLogs();
+            });
+            
+            scheduleBtn.addEventListener('click', function() {
+                openScheduleDialog();
+            });
+            
+            testBtn.addEventListener('click', function() {
+                runTest();
+            });
+            
+            stopBtn.addEventListener('click', function() {
+                stopScraping();
+            });
+            
+            configBtn.addEventListener('click', function() {
+                openConfigDialog();
+            });
+            
+            // Exportación de datos
+            exportJSON.addEventListener('click', function() {
+                exportData('json');
+            });
+            
+            exportCSV.addEventListener('click', function() {
+                exportData('csv');
+            });
+            
+            exportXML.addEventListener('click', function() {
+                exportData('xml');
+            });
+        }
+        
+        // Verificar estado del scraper con el servidor
+        function checkStatus() {
+            addLog('Verificando estado del scraper...', 'info');
+            
+            // Hacer una llamada real al endpoint de estado
+            fetch('/api/auto-scraper/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const status = {
+                            active: data.active,
+                            lastRun: data.lastRun,
+                            progress: data.progress || 0,
+                            urls: data.urls || [],
+                            stats: data.stats || {
+                                pages: 0,
+                                content: 0,
+                                sources: 0,
+                                categories: 0
+                            }
+                        };
+                        
+                        updateUIFromStatus(status);
+                        // Actualizar la lista de URLs procesadas
+                        if (data.urls && data.urls.length > 0) {
+                            updateProcessedUrls(data.urls);
+                        }
+                        
+                        // Actualizar la barra de progreso
+                        updateProgress(data.progress || 0);
+                        
+                        addLog('Estado actualizado correctamente', 'success');
+                    } else {
+                        addLog(`Error al obtener estado: ${data.error}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    addLog(`Error de conexión: ${error}`, 'error');
+                    
+                    // En caso de error, mantener la UI consistente
+                    updateUIFromStatus({
+                        active: false,
+                        lastRun: null,
+                        progress: 0,
+                        urls: [],
+                        stats: {
+                            pages: 0,
+                            content: 0,
+                            sources: 0,
+                            categories: 0
+                        }
+                    });
+                });
+        }
+        
+        // Actualizar la UI basado en el estado recibido
+        function updateUIFromStatus(status) {
+            isScraperActive = status.active;
+            
+            if (status.active) {
+                mainToggleBtn.classList.remove('inactive');
+                mainToggleBtn.classList.add('active');
+                mainToggleBtn.innerHTML = '<i class="fas fa-power-off"></i>Detener';
+                toggleStatusText.textContent = 'Activo';
+                toggleStatusText.classList.remove('status-inactive');
+                toggleStatusText.classList.add('status-active');
+                stopBtn.disabled = false;
+            } else {
+                mainToggleBtn.classList.remove('active');
+                mainToggleBtn.classList.add('inactive');
+                mainToggleBtn.innerHTML = '<i class="fas fa-power-off"></i>Iniciar';
+                toggleStatusText.textContent = 'Inactivo';
+                toggleStatusText.classList.remove('status-active');
+                toggleStatusText.classList.add('status-inactive');
+                stopBtn.disabled = true;
+            }
+            
+            // Actualizar estadísticas
+            totalPages.textContent = status.stats.pages;
+            totalContent.textContent = status.stats.content;
+            totalSources.textContent = status.stats.sources;
+            totalCategories.textContent = status.stats.categories;
+            
+            // Actualizar progreso
+            updateProgress(status.progress);
+            
+            // Actualizar última ejecución
+            if (status.lastRun) {
+                lastExecution.textContent = new Date(status.lastRun).toLocaleString();
+            }
+            
+            // Actualizar URLs procesadas
+            updateProcessedUrls(status.urls);
+        }
+        
+        // Actualizar la barra de progreso
+        function updateProgress(percent) {
+            currentProgress = percent;
+            progressBar.style.width = `${percent}%`;
+            progressText.textContent = `${percent}%`;
+        }
+        
+        // Actualizar la lista de URLs procesadas
+        function updateProcessedUrls(urls) {
+            processedUrlsList = urls;
+            processedUrls.innerHTML = '';
+            
+            if (urls.length === 0) {
+                processedUrls.innerHTML = '<div class="text-center text-muted">No hay URLs procesadas</div>';
+                return;
+            }
+            
+            urls.forEach(url => {
+                const urlItem = document.createElement('div');
+                urlItem.className = 'url-item';
+                urlItem.innerHTML = `
+                    <div>
+                        <span class="url-title">${url.title || url.url}</span>
+                        <span class="url-category">${url.category || 'General'}</span>
+                    </div>
+                    <div class="url-actions">
+                        <button class="btn btn-sm btn-info view-url" data-url="${url.url}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-url" data-url="${url.url}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                processedUrls.appendChild(urlItem);
+            });
+            
+            // Añadir event listeners a los botones
+            document.querySelectorAll('.view-url').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    window.open(this.getAttribute('data-url'), '_blank');
+                });
+            });
+            
+            document.querySelectorAll('.delete-url').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const urlToDelete = this.getAttribute('data-url');
+                    removeUrl(urlToDelete);
+                });
+            });
+        }
+        
+        // Eliminar una URL de la lista
+        function removeUrl(url) {
+            addLog(`Eliminando URL: ${url}`, 'info');
+            
+            // En un entorno real, esto sería una llamada al servidor
+            // Simulamos la eliminación local
+            processedUrlsList = processedUrlsList.filter(item => item.url !== url);
+            updateProcessedUrls(processedUrlsList);
+            addLog('URL eliminada correctamente', 'success');
+        }
+        
+        // Añadir un mensaje al log
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = message;
+            
+            logContainer.insertBefore(logEntry, logContainer.firstChild);
+            
+            // Limitar a 100 entradas para evitar problemas de rendimiento
+            if (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+        
+        // Limpiar el log
+        function clearLogs() {
+            logContainer.innerHTML = '';
+            addLog('Log limpiado', 'info');
+        }
+        
+        // Cambiar entre modos de scraping
+        function setMode(mode) {
+            selectedMode = mode;
+            
+            if (mode === 'general') {
+                modeGeneral.classList.add('active');
+                modeSpecific.classList.remove('active');
+                specificChat.style.display = 'none';
+                addLog('Modo cambiado a: General', 'info');
+            } else {
+                modeGeneral.classList.remove('active');
+                modeSpecific.classList.add('active');
+                specificChat.style.display = 'block';
+                addLog('Modo cambiado a: Específico', 'info');
+            }
+        }
+        
+        // Enviar mensaje en el chat de búsqueda específica
+        function sendChatMessage() {
+            const message = specificQueryInput.value.trim();
+            if (!message) return;
+            
+            // Añadir mensaje del usuario
+            const userMessageElement = document.createElement('div');
+            userMessageElement.className = 'user-message';
+            userMessageElement.textContent = message;
+            chatMessages.appendChild(userMessageElement);
+            
+            // Limpiar input
+            specificQueryInput.value = '';
+            
+            // Scroll al fondo
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // En un entorno real, aquí enviaríamos el mensaje al servidor
+            // Simulamos una respuesta después de un breve retraso
+            setTimeout(() => {
+                addBotResponse(`Buscando información sobre "${message}"...`);
+                
+                // Simulamos el inicio de un scraping específico
+                if (isScraperActive) {
+                    addBotResponse("Ya hay un proceso de scraping en marcha. Por favor, espera a que termine.");
+                } else {
+                    simulateSpecificScraping(message);
+                }
+            }, 500);
+        }
+        
+        // Añadir respuesta del bot al chat
+        function addBotResponse(message) {
+            const botMessageElement = document.createElement('div');
+            botMessageElement.className = 'bot-message';
+            botMessageElement.textContent = message;
+            chatMessages.appendChild(botMessageElement);
+            
+            // Scroll al fondo
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Simular scraping específico
+        function simulateSpecificScraping(query) {
+            toggleScraper(true); // Activar el scraper
+            
+            addLog(`Iniciando scraping específico para: ${query}`, 'info');
+            addBotResponse(`Iniciando búsqueda de información sobre "${query}" en fuentes relevantes de Ibiza.`);
+            
+            // Simulamos progreso
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                updateProgress(progress);
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    finishSpecificScraping(query);
+                }
+            }, 500);
+        }
+        
+        // Finalizar simulación de scraping específico
+        function finishSpecificScraping(query) {
+            // Simulamos resultados
+            const results = [
+                { url: 'https://ejemplo.com/ibiza/playas', title: 'Mejores playas de Ibiza', category: query },
+                { url: 'https://ejemplo.com/ibiza/hoteles', title: 'Hoteles cercanos a las playas', category: query },
+                { url: 'https://ejemplo.com/ibiza/eventos', title: 'Eventos de verano en Ibiza', category: query }
+            ];
+            
+            processedUrlsList = [...processedUrlsList, ...results];
+            updateProcessedUrls(processedUrlsList);
+            
+            // Actualizar estadísticas
+            totalPages.textContent = parseInt(totalPages.textContent) + 15;
+            totalContent.textContent = parseInt(totalContent.textContent) + 35;
+            totalSources.textContent = parseInt(totalSources.textContent) + 3;
+            totalCategories.textContent = parseInt(totalCategories.textContent) + 1;
+            
+            // Actualizar última ejecución
+            lastExecution.textContent = new Date().toLocaleString();
+            
+            addLog(`Scraping específico para "${query}" completado`, 'success');
+            addBotResponse(`¡Búsqueda completada! He encontrado información relevante sobre "${query}" en Ibiza. Puedes ver los resultados en la sección de URLs procesadas.`);
+            
+            toggleScraper(false); // Desactivar el scraper
+        }
+        
+        // Activar/desactivar el scraper
+        function toggleScraper(forceState = null) {
+            const newState = forceState !== null ? forceState : !isScraperActive;
+            isScraperActive = newState;
+            
+            if (isScraperActive) {
+                mainToggleBtn.classList.remove('inactive');
+                mainToggleBtn.classList.add('active');
+                mainToggleBtn.innerHTML = '<i class="fas fa-power-off"></i>Detener';
+                toggleStatusText.textContent = 'Activo';
+                toggleStatusText.classList.remove('status-inactive');
+                toggleStatusText.classList.add('status-active');
+                stopBtn.disabled = false;
+                
+                addLog('Scraping automático activado', 'success');
+                
+                // Iniciar el scraper en el servidor usando la API
+                if (forceState === null) { // Solo si no es forzado por otra función
+                    const query = selectedMode === 'specific' ? specificQueryInput.value : '';
+                    
+                    fetch('/api/auto-scraper/toggle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            state: true,
+                            query: query,
+                            max_pages: 5
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLog(`Scraper iniciado: ${data.status}`, 'success');
+                            // También enviamos la información al chatbot
+                            notifyChatbot(true, query);
+                        } else {
+                            addLog(`Error al iniciar el scraper: ${data.error}`, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        addLog(`Error en la conexión: ${error}`, 'error');
+                    });
+                }
+            } else {
+                mainToggleBtn.classList.remove('active');
+                mainToggleBtn.classList.add('inactive');
+                mainToggleBtn.innerHTML = '<i class="fas fa-power-off"></i>Iniciar';
+                toggleStatusText.textContent = 'Inactivo';
+                toggleStatusText.classList.remove('status-active');
+                toggleStatusText.classList.add('status-inactive');
+                stopBtn.disabled = true;
+                
+                addLog('Scraping automático desactivado', 'info');
+                
+                // Detener el scraper en el servidor
+                if (forceState === null) {
+                    fetch('/api/auto-scraper/toggle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            state: false
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLog(`Scraper detenido: ${data.status}`, 'success');
+                            // Notificar al chatbot
+                            notifyChatbot(false);
+                        } else {
+                            addLog(`Error al detener el scraper: ${data.error}`, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        addLog(`Error en la conexión: ${error}`, 'error');
+                    });
+                }
+            }
+        }
+        
+        // Función para notificar al chatbot sobre el estado del scraper
+        function notifyChatbot(isActive, query = '') {
+            // Enviar un mensaje al chatbot para que sepa que hay datos del scraper disponibles
+            fetch('/api/bot_chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: isActive 
+                        ? `[SISTEMA] Scraper activado: ${query ? 'Búsqueda específica sobre "' + query + '"' : 'Búsqueda general sobre Ibiza'}`
+                        : '[SISTEMA] Scraper desactivado'
+                })
+            })
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Error notificando al chatbot:', error);
+            });
+        }
+        
+        // Ejecutar prueba rápida
+        function runTest() {
+            if (isScraperActive) {
+                addLog('Ya hay un proceso en marcha. Detén el proceso actual antes de ejecutar una prueba.', 'warning');
+                return;
+            }
+            
+            // Obtener la consulta de prueba del input específico o usar consulta predeterminada
+            const testQuery = selectedMode === 'specific' ? specificQueryInput.value : '';
+                
+            // Colocar la consulta en el campo de búsqueda de prueba
+            document.getElementById('testSearchQuery').value = testQuery;
+            
+            // Deshabilitar botones durante la prueba
+            testBtn.disabled = true;
+            mainToggleBtn.disabled = true;
+            
+            // Ejecutar la búsqueda de prueba usando la función existente
+            runTestSearch();
+            
+            // Reactivar botones después de un momento
+            setTimeout(() => {
+                testBtn.disabled = false;
+                mainToggleBtn.disabled = false;
+            }, 1000);
+        }
+        
+        // Detener proceso actual
+        function stopScraping() {
+            if (!isScraperActive) return;
+            
+            addLog('Deteniendo proceso de scraping...', 'warning');
+            toggleScraper(false);
+        }
+        
+        // Abrir diálogo de programación
+        function openScheduleDialog() {
+            addLog('Función de programación no implementada en esta versión de demostración', 'info');
+            alert('Esta funcionalidad estará disponible en la próxima versión.');
+        }
+        
+        // Abrir diálogo de configuración
+        function openConfigDialog() {
+            addLog('Función de configuración no implementada en esta versión de demostración', 'info');
+            alert('Esta funcionalidad estará disponible en la próxima versión.');
+        }
+        
+        // Exportar datos en diferentes formatos
+        function exportData(format) {
+            addLog(`Exportando datos en formato ${format.toUpperCase()}...`, 'info');
+            
+            // Crear el nombre del archivo con la fecha actual
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+            const filename = `auto_scraper_export_${dateStr}_${timeStr}.${format}`;
+            
+            // Crear enlace para descargar el archivo
+            const downloadUrl = `/api/auto-scraper/export?format=${format}`;
+            
+            // Crear un elemento <a> temporal para la descarga
+            const downloadLink = document.createElement('a');
+            downloadLink.href = downloadUrl;
+            downloadLink.download = filename;
+            downloadLink.style.display = 'none';
+            
+            // Añadir a la página, hacer clic y eliminar
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            
+            // Esperar un momento antes de eliminar el enlace
+            setTimeout(() => {
+                document.body.removeChild(downloadLink);
+                addLog(`Datos exportados correctamente en ${format.toUpperCase()}`, 'success');
+            }, 1000);
+        }
+        
+        // Funciones para la configuración
+        let currentConfig = {};
+        
+        // Cargar configuración desde el servidor
+        function loadConfiguration() {
+            addLog('Cargando configuración...', 'info');
+            
+            fetch('/api/auto-scraper/config')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentConfig = data.config;
+                        updateConfigUI(currentConfig);
+                        addLog('Configuración cargada correctamente', 'success');
+                    } else {
+                        addLog(`Error al cargar configuración: ${data.error}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    addLog(`Error al cargar configuración: ${error}`, 'error');
+                });
+        }
+        
+        // Actualizar la UI con la configuración
+        function updateConfigUI(config) {
+            // Configuración general
+            document.getElementById('maxPages').value = config.max_pages || 5;
+            document.getElementById('maxDepth').value = config.max_depth || 2;
+            document.getElementById('updateFrequency').value = config.update_frequency || 'daily';
+            document.getElementById('useHeadless').checked = 
+                config.options && config.options.headless !== undefined ? config.options.headless : true;
+            
+            // Actualizar listas de fuentes y búsquedas
+            updateSourcesList(config.sources || []);
+            updateSearchesList(config.searches || []);
+        }
+        
+        // Actualizar lista de fuentes
+        function updateSourcesList(sources) {
+            const sourcesList = document.getElementById('sourcesList');
+            sourcesList.innerHTML = '';
+            
+            if (sources.length > 0) {
+                sources.forEach((source, index) => {
+                    const sourceItem = document.createElement('div');
+                    sourceItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    sourceItem.innerHTML = `
+                        <div>
+                            <h6 class="mb-1">${source.name || 'Fuente ' + (index + 1)}</h6>
+                            <p class="mb-1 text-muted small">${source.url}</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary me-1 edit-source" data-index="${index}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-source" data-index="${index}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    sourcesList.appendChild(sourceItem);
+                });
+            } else {
+                const emptyItem = document.createElement('div');
+                emptyItem.className = 'list-group-item text-center text-muted';
+                emptyItem.innerText = 'No hay fuentes configuradas';
+                sourcesList.appendChild(emptyItem);
+            }
+        }
+        
+        // Actualizar lista de búsquedas
+        function updateSearchesList(searches) {
+            const searchesList = document.getElementById('searchesList');
+            searchesList.innerHTML = '';
+            
+            if (searches.length > 0) {
+                searches.forEach((search, index) => {
+                    const searchItem = document.createElement('div');
+                    searchItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    searchItem.innerHTML = `
+                        <div>
+                            <h6 class="mb-1">${search.name || 'Búsqueda ' + (index + 1)}</h6>
+                            <p class="mb-1 text-muted small">${search.query}</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary me-1 edit-search" data-index="${index}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-search" data-index="${index}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    searchesList.appendChild(searchItem);
+                });
+            } else {
+                const emptyItem = document.createElement('div');
+                emptyItem.className = 'list-group-item text-center text-muted';
+                emptyItem.innerText = 'No hay búsquedas configuradas';
+                searchesList.appendChild(emptyItem);
+            }
+        }
+        
+        // Guardar configuración al servidor
+        function saveConfiguration() {
+            // Recopilar datos del formulario
+            const config = {
+                max_pages: parseInt(document.getElementById('maxPages').value, 10),
+                max_depth: parseInt(document.getElementById('maxDepth').value, 10),
+                update_frequency: document.getElementById('updateFrequency').value,
+                options: {
+                    ...currentConfig.options,
+                    headless: document.getElementById('useHeadless').checked
+                },
+                sources: currentConfig.sources || [],
+                searches: currentConfig.searches || [],
+                schedules: currentConfig.schedules || {}
+            };
+            
+            addLog('Guardando configuración...', 'info');
+            
+            // Enviar al servidor
+            fetch('/api/auto-scraper/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentConfig = config;
+                    addLog('Configuración guardada correctamente', 'success');
+                    
+                    // Cerrar el modal
+                    const configModal = bootstrap.Modal.getInstance(document.getElementById('configModal'));
+                    if (configModal) {
+                        configModal.hide();
+                    }
+                    
+                    // Actualizar UI para reflejar los cambios
+                    checkStatus();
+                } else {
+                    addLog(`Error al guardar configuración: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                addLog(`Error al guardar configuración: ${error}`, 'error');
+            });
+        }
+        
+        // Event listeners para botones de configuración
+        document.getElementById('configBtn').addEventListener('click', function() {
+            loadConfiguration();
+            const configModal = new bootstrap.Modal(document.getElementById('configModal'));
+            configModal.show();
+        });
+        
+        document.getElementById('saveConfigBtn').addEventListener('click', saveConfiguration);
+        
+        // Manejadores para fuentes y búsquedas
+        document.getElementById('addSourceBtn').addEventListener('click', function() {
+            const url = prompt('Introduce la URL de la fuente:');
+            if (url) {
+                if (!currentConfig.sources) {
+                    currentConfig.sources = [];
+                }
+                
+                currentConfig.sources.push({
+                    name: `Fuente ${currentConfig.sources.length + 1}`,
+                    url: url,
+                    active: true
+                });
+                
+                updateSourcesList(currentConfig.sources);
+            }
+        });
+        
+        document.getElementById('addSearchBtn').addEventListener('click', function() {
+            const query = prompt('Introduce la consulta de búsqueda:');
+            if (query) {
+                if (!currentConfig.searches) {
+                    currentConfig.searches = [];
+                }
+                
+                currentConfig.searches.push({
+                    name: `Búsqueda ${currentConfig.searches.length + 1}`,
+                    query: query,
+                    active: true
+                });
+                
+                updateSearchesList(currentConfig.searches);
+            }
+        });
+        
+        // Delegación de eventos para editar/eliminar fuentes y búsquedas
+        document.addEventListener('click', function(e) {
+            // Editar fuente
+            if (e.target.closest('.edit-source')) {
+                const button = e.target.closest('.edit-source');
+                const index = parseInt(button.dataset.index, 10);
+                const source = currentConfig.sources[index];
+                
+                const name = prompt('Nombre de la fuente:', source.name);
+                if (name) {
+                    source.name = name;
+                    updateSourcesList(currentConfig.sources);
+                }
+            }
+            
+            // Eliminar fuente
+            if (e.target.closest('.delete-source')) {
+                const button = e.target.closest('.delete-source');
+                const index = parseInt(button.dataset.index, 10);
+                
+                if (confirm('¿Seguro que quieres eliminar esta fuente?')) {
+                    currentConfig.sources.splice(index, 1);
+                    updateSourcesList(currentConfig.sources);
+                }
+            }
+            
+            // Editar búsqueda
+            if (e.target.closest('.edit-search')) {
+                const button = e.target.closest('.edit-search');
+                const index = parseInt(button.dataset.index, 10);
+                const search = currentConfig.searches[index];
+                
+                const query = prompt('Consulta de búsqueda:', search.query);
+                if (query) {
+                    search.query = query;
+                    updateSearchesList(currentConfig.searches);
+                }
+            }
+            
+            // Eliminar búsqueda
+            if (e.target.closest('.delete-search')) {
+                const button = e.target.closest('.delete-search');
+                const index = parseInt(button.dataset.index, 10);
+                
+                if (confirm('¿Seguro que quieres eliminar esta búsqueda?')) {
+                    currentConfig.searches.splice(index, 1);
+                    updateSearchesList(currentConfig.searches);
+                }
+            }
+        });
+        
+        // Manejadores para el diálogo de programación
+        document.getElementById('scheduleBtn').addEventListener('click', function() {
+            // Inicializar fecha y hora actuales
+            const now = new Date();
+            document.getElementById('scheduleDate').value = now.toISOString().split('T')[0];
+            document.getElementById('scheduleTime').value = 
+                `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+            scheduleModal.show();
+        });
+        
+        // Mostrar/ocultar campos según el tipo de programación
+        document.getElementById('scheduleType').addEventListener('change', function() {
+            const type = this.value;
+            const datePicker = document.getElementById('datePicker');
+            const weekdaySelector = document.getElementById('weekdaySelector');
+            
+            datePicker.style.display = type === 'once' ? 'block' : 'none';
+            weekdaySelector.style.display = type === 'weekly' ? 'block' : 'none';
+        });
+        
+        // Mostrar/ocultar campo de consulta según el modo
+        document.getElementById('scheduleMode').addEventListener('change', function() {
+            document.getElementById('scheduleQueryContainer').style.display = 
+                this.value === 'specific' ? 'block' : 'none';
+        });
+        
+        // Guardar programación
+        document.getElementById('saveScheduleBtn').addEventListener('click', function() {
+            const scheduleType = document.getElementById('scheduleType').value;
+            const scheduleTime = document.getElementById('scheduleTime').value;
+            const scheduleMode = document.getElementById('scheduleMode').value;
+            const scheduleQuery = document.getElementById('scheduleQuery').value || "eventos en Ibiza";
+            
+            // Crear objeto de programación
+            const schedule = {
+                type: scheduleType,
+                time: scheduleTime,
+                mode: scheduleMode,
+                query: scheduleMode === 'specific' ? scheduleQuery : "eventos en Ibiza"
+            };
+            
+            // Añadir campos específicos según el tipo
+            if (scheduleType === 'once') {
+                schedule.date = document.getElementById('scheduleDate').value;
+            } else if (scheduleType === 'weekly') {
+                schedule.days = {
+                    mon: document.getElementById('dayMon').checked,
+                    tue: document.getElementById('dayTue').checked,
+                    wed: document.getElementById('dayWed').checked,
+                    thu: document.getElementById('dayThu').checked,
+                    fri: document.getElementById('dayFri').checked,
+                    sat: document.getElementById('daySat').checked,
+                    sun: document.getElementById('daySun').checked
+                };
+            }
+            
+            // Agregar a configuración actual
+            if (!currentConfig.schedules) {
+                currentConfig.schedules = {};
+            }
+            
+            const scheduleId = `schedule_${Date.now()}`;
+            currentConfig.schedules[scheduleId] = schedule;
+            
+            // Por ahora solo mostramos un mensaje, pero idealmente
+            // se guardaría en la configuración del servidor
+            addLog(`Programación guardada: ${scheduleType} a las ${scheduleTime}`, 'success');
+            
+            // Cerrar modal
+            const scheduleModal = bootstrap.Modal.getInstance(document.getElementById('scheduleModal'));
+            if (scheduleModal) {
+                scheduleModal.hide();
+            }
+        });
+        
+        // Función para ejecutar una búsqueda de prueba
+        function runTestSearch() {
+            const query = document.getElementById('testSearchQuery').value.trim();
+            const maxResults = document.getElementById('testSearchMaxResults').value;
+            
+            if (!query) {
+                addLog('Por favor, introduce una consulta de búsqueda', 'warning');
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            const btnTestSearch = document.getElementById('btnTestSearch');
+            const originalBtnHtml = btnTestSearch.innerHTML;
+            btnTestSearch.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Buscando...';
+            btnTestSearch.disabled = true;
+            
+            // Ocultar resultados anteriores
+            document.getElementById('testSearchResults').style.display = 'none';
+            
+            // Log de la acción
+            addLog(`Ejecutando búsqueda de prueba: "${query}" (máx: ${maxResults} resultados)`, 'info');
+            
+            // Realizar la solicitud al servidor
+            fetch('/api/auto-scraper/test-search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: query,
+                    max_results: maxResults
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Restaurar botón
+                btnTestSearch.innerHTML = originalBtnHtml;
+                btnTestSearch.disabled = false;
+                
+                if (!data.success) {
+                    addLog(`Error en la búsqueda: ${data.error}`, 'error');
+                    return;
+                }
+                
+                // Mostrar resultados
+                displayTestSearchResults(data);
+                addLog(`Búsqueda completada: ${data.results_count} resultados encontrados`, 'success');
+            })
+            .catch(error => {
+                // Restaurar botón
+                btnTestSearch.innerHTML = originalBtnHtml;
+                btnTestSearch.disabled = false;
+                
+                addLog(`Error en la búsqueda: ${error}`, 'error');
+                console.error('Error en la búsqueda de prueba:', error);
+            });
+        }
+        
+        // Función para mostrar los resultados de la búsqueda de prueba
+        function displayTestSearchResults(data) {
+            const resultsContainer = document.getElementById('testSearchResults');
+            const resultsList = document.getElementById('testSearchResultsList');
+            const summaryElement = document.getElementById('testSearchSummary');
+            
+            // Mostrar contenedor de resultados
+            resultsContainer.style.display = 'block';
+            
+            // Verificar que los datos contengan la información necesaria
+            const query = data.query || 'Consulta no especificada';
+            const engine = data.engine || 'No especificado';
+            const results_count = data.results_count || 0;
+            
+            // Formatear la fecha/hora, con manejo de errores
+            let timestamp = 'Fecha no disponible';
+            if (data.timestamp) {
+                try {
+                    timestamp = new Date(data.timestamp).toLocaleString();
+                } catch (e) {
+                    console.error('Error al formatear timestamp:', e);
+                    timestamp = 'Formato de fecha inválido';
+                }
+            }
+            
+            // Mostrar resumen con comprobación de valores
+            summaryElement.innerHTML = `
+                <strong>Consulta:</strong> "${query}" <br>
+                <strong>Motor:</strong> ${engine} <br>
+                <strong>Resultados:</strong> ${results_count} <br>
+                <strong>Fecha:</strong> ${timestamp}
+            `;
+            
+            // Limpiar resultados anteriores
+            resultsList.innerHTML = '';
+            
+            // Si no hay resultados o no hay campo results
+            if (!data.results || !Array.isArray(data.results) || data.results.length === 0) {
+                resultsList.innerHTML = '<div class="text-center text-muted py-3">No se encontraron resultados</div>';
+                return;
+            }
+            
+            // Mostrar cada resultado con manejo de seguridad
+            data.results.forEach(result => {
+                // Verificación de seguridad para result
+                if (!result || typeof result !== 'object') {
+                    console.error('Formato de resultado inválido:', result);
+                    return; // Saltamos este resultado
+                }
+                
+                const resultItem = document.createElement('div');
+                resultItem.className = 'list-group-item';
+                
+                // Valores por defecto para campos obligatorios
+                const title = result.title || 'Sin título';
+                const url = result.url || '#';
+                const snippet = result.snippet || 'Sin descripción';
+                
+                // Extraer el dominio para mostrar con manejo de errores
+                let domain = 'desconocido';
+                if (url && url !== '#') {
+                    try {
+                        const urlObj = new URL(url);
+                        domain = urlObj.hostname;
+                    } catch (e) {
+                        console.error('Error al parsear URL:', e);
+                        // Mantener el valor por defecto
+                    }
+                }
+                
+                resultItem.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">${title}</h5>
+                        <small class="text-muted">${domain}</small>
+                    </div>
+                    <p class="mb-1">${snippet}</p>
+                    <small>
+                        <a href="${url}" target="_blank" class="text-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>${url}
+                        </a>
+                    </small>
+                `;
+                
+                resultsList.appendChild(resultItem);
+            });
+            
+            // Añadir botones para exportar si hay resultados
+            const exportDiv = document.createElement('div');
+            exportDiv.className = 'mt-3 text-center';
+            exportDiv.innerHTML = `
+                <p class="mb-2">Exportar todos los datos del scraper:</p>
+                <a href="/api/auto-scraper/export?format=json" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <i class="fas fa-file-export me-1"></i>JSON
+                </a>
+                <a href="/api/auto-scraper/export?format=csv" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <i class="fas fa-file-csv me-1"></i>CSV
+                </a>
+                <a href="/api/auto-scraper/export?format=xml" class="btn btn-sm btn-outline-primary" target="_blank">
+                    <i class="fas fa-file-code me-1"></i>XML
+                </a>
+            `;
+            resultsContainer.appendChild(exportDiv);
+        }
+    </script>
+</body>
+</html>

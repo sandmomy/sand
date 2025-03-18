@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivos - Ibiza InfoBot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ibiza_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-logo">
+                <i class="fas fa-umbrella-beach highlight-neon"></i>
+                <span class="logo-text">IBIZA INFO</span>
+            </div>
+            <span class="logo-subtitle">ASISTENTE DIGITAL</span>
+        </div>
+        
+        <div class="navbar-menu">
+            <a href="/" class="menu-item">Inicio</a>
+            <a href="/archivos" class="menu-item active">Archivos</a>
+            <a href="/videos" class="menu-item">Videos</a>
+            <a href="/imagenes" class="menu-item">Imágenes</a>
+            <a href="/test" class="menu-item test-link"><i class="fas fa-vial"></i> Test</a>
+        </div>
+        
+        <div class="navbar-search">
+            <input type="text" placeholder="Buscar..." class="search-input">
+            <button class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content">
+            <h1 class="section-title">Gestor de <span class="highlight-neon">Archivos</span><div class="title-underline"></div></h1>
+            
+            <div class="upload-section">
+                <h2 class="content-title">Subir Archivos</h2>
+                <div class="upload-area">
+                    <form id="upload-file-form" enctype="multipart/form-data">
+                        <div class="file-drop-area">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Arrastra y suelta archivos aquí o</p>
+                            <label for="file-input" class="file-select-btn">Seleccionar Archivos</label>
+                            <input type="file" id="file-input" multiple style="display:none;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="file-category" class="form-label">Categoría:</label>
+                            <select id="file-category" class="form-input">
+                                <option value="documentos">Documentos</option>
+                                <option value="guias">Guías</option>
+                                <option value="informes">Informes</option>
+                                <option value="otros">Otros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="file-description" class="form-label">Descripción:</label>
+                            <textarea id="file-description" class="form-input" rows="3" placeholder="Añade una descripción breve..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="action-btn upload-btn">
+                            <i class="fas fa-upload"></i> Subir Archivos
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="files-library">
+                <h2 class="content-title">Biblioteca de Archivos</h2>
+                
+                <div class="files-filter">
+                    <div class="filter-option active" data-filter="all">Todos</div>
+                    <div class="filter-option" data-filter="documentos">Documentos</div>
+                    <div class="filter-option" data-filter="guias">Guías</div>
+                    <div class="filter-option" data-filter="informes">Informes</div>
+                    <div class="filter-option" data-filter="otros">Otros</div>
+                </div>
+                
+                <div class="files-grid">
+                    <!-- Los archivos se cargarán dinámicamente aquí -->
+                    <div class="file-card" data-category="documentos">
+                        <div class="file-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">guia_turistica_ibiza.pdf</div>
+                            <div class="file-meta">PDF - 3.2 MB</div>
+                            <div class="file-description">Guía completa de turismo en Ibiza 2025</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-btn view-btn"><i class="fas fa-eye"></i></button>
+                            <button class="file-btn download-btn"><i class="fas fa-download"></i></button>
+                            <button class="file-btn delete-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-card" data-category="informes">
+                        <div class="file-icon">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">estadisticas_eventos.xlsx</div>
+                            <div class="file-meta">Excel - 1.8 MB</div>
+                            <div class="file-description">Estadísticas de eventos en Ibiza (2024-2025)</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-btn view-btn"><i class="fas fa-eye"></i></button>
+                            <button class="file-btn download-btn"><i class="fas fa-download"></i></button>
+                            <button class="file-btn delete-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/ibiza_script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ibiza_decorations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/archon_integration.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/files_manager.js') }}"></script>
+</body>
+</html>

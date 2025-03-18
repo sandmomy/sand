@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Prueba</title>
+</head>
+<body>
+    <h1>Prueba del Servidor</h1>
+    <p>Si puedes ver esta página, el servidor está funcionando correctamente.</p>
+    
+    <h2>Secciones disponibles:</h2>
+    <ul>
+        <li><a href="/">Página principal</a></li>
+        <li><a href="/asistente">Asistente virtual (chatbot)</a></li>
+        <li><a href="/archon-scraper">Archon Scraper</a></li>
+        <li><a href="/auto-scraper">Auto Scraper</a></li>
+    </ul>
+    
+    <h2>Prueba de chatbot:</h2>
+    <div style="margin: 20px; padding: 20px; border: 1px solid #ccc;">
+        <h3>Envía una pregunta al chatbot:</h3>
+        <form id="chat-form">
+            <input type="text" id="chat-input" style="width: 80%; padding: 10px;" placeholder="Escribe tu pregunta aquí..." value="¿Cuáles son las mejores playas de Ibiza?">
+            <button type="submit" style="padding: 10px 20px; background-color: #0077b6; color: white; border: none;">Enviar</button>
+        </form>
+        <div id="chat-response" style="margin-top: 20px; padding: 15px; background-color: #f0f0f0; min-height: 100px;">
+            <p>La respuesta aparecerá aquí...</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Obtener el valor del input
+            const message = document.getElementById('chat-input').value;
+            
+            // Mostrar mensaje de carga
+            document.getElementById('chat-response').innerHTML = '<p>Consultando al chatbot...</p>';
+            
+            // Enviar la solicitud al servidor
+            fetch('/bot_chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Formatear la respuesta
+                let html = `<p><strong>Respuesta:</strong> ${data.message}</p>`;
+                
+                // Añadir fuentes si existen
+                if (data.sources && data.sources.length > 0) {
+                    html += '<p><strong>Fuentes:</strong></p><ul>';
+                    data.sources.forEach(source => {
+                        html += `<li><a href="${source.url}" target="_blank">${source.title}</a></li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                // Mostrar el resultado
+                document.getElementById('chat-response').innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('chat-response').innerHTML = `<p>Error: ${error.message}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>

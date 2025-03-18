@@ -1,0 +1,72 @@
+/* Variables para el chatbot */
+:root {
+  --chat-primary-color: #00bcd4;
+  --chat-secondary-color: #007a8c;
+  --chat-background: #111;
+  --chat-text: #fff;
+  --chat-text-secondary: #ccc;
+  --chat-border: rgba(255, 255, 255, 0.1);
+  --chat-shadow: rgba(0, 200, 255, 0.3);
+  --chat-user-message-bg: linear-gradient(135deg, #00204a, #005792);
+  --chat-bot-message-bg: linear-gradient(135deg, #222, #333);
+  --chat-input-bg: rgba(40, 40, 40, 0.8);
+  --chat-typing-animation: #00bcd4;
+  --chat-send-button-bg: linear-gradient(135deg, #00bcd4, #007a8c);
+  --chat-send-button-hover: rgba(0, 200, 255, 0.5);
+  --chat-avatar-border: #00bcd4;
+  --chat-suggestion-bg: rgba(40, 40, 40, 0.8);
+  --chat-suggestion-hover: rgba(0, 188, 212, 0.3);
+}
+
+/* Animaciones para el chatbot */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes typingAnimation {
+  0%, 100% { transform: translateY(0); background-color: #999; }
+  50% { transform: translateY(-5px); background-color: var(--chat-typing-animation); }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 188, 212, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0); }
+}
+
+@keyframes borderPulse {
+  0% { border-color: rgba(0, 188, 212, 0.4); }
+  50% { border-color: rgba(0, 188, 212, 0.8); }
+  100% { border-color: rgba(0, 188, 212, 0.4); }
+}
+
+/* Estilos adicionales para efectos en la UI */
+.chat-input.focused {
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.2);
+}
+
+.chat-input.focused input {
+  background-color: rgba(50, 50, 50, 0.8);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px var(--chat-shadow);
+}
+
+.message-content {
+  width: 100%;
+}
+
+.message-text {
+  width: 100%;
+  line-height: 1.5;
+}
+
+/* Efectos para los botones de sugerencia */
+.suggestion-btn {
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.suggestion-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--chat-primary-color);
+}

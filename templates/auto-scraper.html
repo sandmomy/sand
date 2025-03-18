@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Scraper</title>
+</head>
+<body>
+    <h1>Auto-Scraper</h1>
+    <form id="scraper_form">
+        <input type="text" id="url_input" placeholder="Introduce la URL...">
+        <button type="submit">Scrapear</button>
+    </form>
+    <div id="scraped_data"></div>
+    <script>
+        document.getElementById('scraper_form').onsubmit = function(e) {
+            e.preventDefault();
+            const url = document.getElementById('url_input').value;
+            fetch('/auto-scraper', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const scrapedData = document.getElementById('scraped_data');
+                scrapedData.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            });
+        };
+    </script>
+</body>
+</html>

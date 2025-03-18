@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitios Web - Ibiza InfoBot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ibiza_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-logo">
+                <i class="fas fa-umbrella-beach highlight-neon"></i>
+                <span class="logo-text">IBIZA INFO</span>
+            </div>
+            <span class="logo-subtitle">ASISTENTE DIGITAL</span>
+        </div>
+        
+        <div class="navbar-menu">
+            <a href="/" class="menu-item">Inicio</a>
+            <a href="/archivos" class="menu-item">Archivos</a>
+            <a href="/videos" class="menu-item">Videos</a>
+            <a href="/imagenes" class="menu-item">Imágenes</a>
+            <a href="/test" class="menu-item test-link"><i class="fas fa-vial"></i> Test</a>
+        </div>
+        
+        <div class="navbar-search">
+            <input type="text" placeholder="Buscar..." class="search-input">
+            <button class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content">
+            <h1 class="section-title">Analista de <span class="highlight-neon">Sitios Web</span><div class="title-underline"></div></h1>
+            
+            <div class="scraping-section visible">
+                <h2 class="content-title">Web Scraping con Archon AI</h2>
+                <p class="section-description">Utiliza la potencia de Archon para analizar y extraer datos de cualquier sitio web relacionado con Ibiza.</p>
+                
+                <form id="scraping-form" class="scraping-form">
+                    <div class="form-group">
+                        <label for="url-input" class="form-label">URL del sitio web:</label>
+                        <div class="url-input-container">
+                            <input type="url" id="url-input" class="form-input" placeholder="https://ejemplo.com" required>
+                            <button type="button" id="paste-url-btn" class="url-btn"><i class="fas fa-paste"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="scraping-options">
+                        <h3 class="options-title">Opciones de análisis</h3>
+                        
+                        <div class="form-group">
+                            <label for="scraping-tool" class="form-label">Herramienta de scraping:</label>
+                            <select id="scraping-tool" class="form-input">
+                                <option value="auto">Automática (recomendado)</option>
+                                <option value="beautifulsoup">Beautiful Soup - Páginas estáticas simples</option>
+                                <option value="scrapy">Scrapy - Proyectos grandes</option>
+                                <option value="selenium">Selenium - Contenido dinámico con JavaScript</option>
+                                <option value="playwright">Playwright - Navegación completa</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="analysis-depth" class="form-label">Profundidad de análisis:</label>
+                            <select id="analysis-depth" class="form-input">
+                                <option value="1">Básica - Solo página principal</option>
+                                <option value="2" selected>Estándar - Página principal y enlaces directos</option>
+                                <option value="3">Profunda - Exploración multinivel (puede tardar más)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="data-category" class="form-label">Categoría de datos:</label>
+                            <select id="data-category" class="form-input">
+                                <option value="general">General (todos los datos)</option>
+                                <option value="eventos">Eventos y fiestas</option>
+                                <option value="lugares">Lugares y atracciones</option>
+                                <option value="restaurantes">Restaurantes y gastronomía</option>
+                                <option value="playas">Playas e información costera</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group checkboxes">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="extract-images" checked>
+                                <span class="checkbox-text">Extraer imágenes</span>
+                            </label>
+                            
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="extract-links" checked>
+                                <span class="checkbox-text">Extraer enlaces</span>
+                            </label>
+                            
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="use-ai-summary">
+                                <span class="checkbox-text">Generar resumen con IA (gemini-pro)</span>
+                            </label>
+                            
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="deep-reasoning">
+                                <span class="checkbox-text">Usar razonamiento profundo (deepseek-r1:7b-8k)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" id="start-scraping" class="action-btn">
+                            <i class="fas fa-spider"></i> Iniciar Análisis
+                        </button>
+                        <button type="button" id="clear-form" class="secondary-btn">
+                            <i class="fas fa-eraser"></i> Limpiar
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="saved-sites-section">
+                <h2 class="content-title">Sitios Web Guardados</h2>
+                
+                <div class="sites-filter">
+                    <div class="filter-option active" data-filter="all">Todos</div>
+                    <div class="filter-option" data-filter="eventos">Eventos</div>
+                    <div class="filter-option" data-filter="lugares">Lugares</div>
+                    <div class="filter-option" data-filter="restaurantes">Restaurantes</div>
+                    <div class="filter-option" data-filter="playas">Playas</div>
+                    <div class="filter-option" data-filter="otros">Otros</div>
+                </div>
+                
+                <div class="sites-grid">
+                    <div class="site-card" data-category="eventos">
+                        <div class="site-preview">
+                            <img src="{{ url_for('static', filename='img/site-preview1.jpg') }}" alt="Ushuaïa Ibiza">
+                            <div class="site-overlay">
+                                <a href="https://www.ushuaiaibiza.com/" target="_blank" class="visit-btn">
+                                    <i class="fas fa-external-link-alt"></i> Visitar
+                                </a>
+                            </div>
+                        </div>
+                        <div class="site-info">
+                            <h3 class="site-title">Ushuaïa Ibiza</h3>
+                            <div class="site-url">ushuaiaibiza.com</div>
+                            <p class="site-description">Calendario de eventos y fiestas en Ushuaïa Beach Hotel, uno de los clubes más populares de Ibiza.</p>
+                            <div class="site-meta">
+                                <span class="site-category">Eventos</span>
+                                <span class="site-date">Analizado: 14 Mar 2025</span>
+                            </div>
+                        </div>
+                        <div class="site-actions">
+                            <button class="site-btn analyze-btn" data-url="https://www.ushuaiaibiza.com/">
+                                <i class="fas fa-sync-alt"></i> Reanalizar
+                            </button>
+                            <button class="site-btn view-data-btn">
+                                <i class="fas fa-chart-bar"></i> Ver Datos
+                            </button>
+                            <button class="site-btn delete-btn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="site-card" data-category="playas">
+                        <div class="site-preview">
+                            <img src="{{ url_for('static', filename='img/site-preview2.jpg') }}" alt="Playas de Ibiza">
+                            <div class="site-overlay">
+                                <a href="https://www.ibiza-spotlight.com/playas" target="_blank" class="visit-btn">
+                                    <i class="fas fa-external-link-alt"></i> Visitar
+                                </a>
+                            </div>
+                        </div>
+                        <div class="site-info">
+                            <h3 class="site-title">Ibiza Spotlight - Playas</h3>
+                            <div class="site-url">ibiza-spotlight.com/playas</div>
+                            <p class="site-description">Guía completa de las playas más impresionantes de Ibiza, con información detallada sobre cada una.</p>
+                            <div class="site-meta">
+                                <span class="site-category">Playas</span>
+                                <span class="site-date">Analizado: 10 Mar 2025</span>
+                            </div>
+                        </div>
+                        <div class="site-actions">
+                            <button class="site-btn analyze-btn" data-url="https://www.ibiza-spotlight.com/playas">
+                                <i class="fas fa-sync-alt"></i> Reanalizar
+                            </button>
+                            <button class="site-btn view-data-btn">
+                                <i class="fas fa-chart-bar"></i> Ver Datos
+                            </button>
+                            <button class="site-btn delete-btn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="site-card" data-category="restaurantes">
+                        <div class="site-preview">
+                            <img src="{{ url_for('static', filename='img/site-preview3.jpg') }}" alt="Restaurantes de Ibiza">
+                            <div class="site-overlay">
+                                <a href="https://www.ibiza-restaurants.net/" target="_blank" class="visit-btn">
+                                    <i class="fas fa-external-link-alt"></i> Visitar
+                                </a>
+                            </div>
+                        </div>
+                        <div class="site-info">
+                            <h3 class="site-title">Ibiza Restaurantes</h3>
+                            <div class="site-url">ibiza-restaurants.net</div>
+                            <p class="site-description">Listado de los mejores restaurantes de Ibiza, con reseñas, fotos y ubicaciones.</p>
+                            <div class="site-meta">
+                                <span class="site-category">Restaurantes</span>
+                                <span class="site-date">Analizado: 08 Mar 2025</span>
+                            </div>
+                        </div>
+                        <div class="site-actions">
+                            <button class="site-btn analyze-btn" data-url="https://www.ibiza-restaurants.net/">
+                                <i class="fas fa-sync-alt"></i> Reanalizar
+                            </button>
+                            <button class="site-btn view-data-btn">
+                                <i class="fas fa-chart-bar"></i> Ver Datos
+                            </button>
+                            <button class="site-btn delete-btn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para resultados del análisis -->
+    <div id="results-modal" class="modal results-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Resultados del Análisis</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="scraping-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/ibiza_script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ibiza_decorations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/archon_integration.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/web_analyzer.js') }}"></script>
+</body>
+</html>

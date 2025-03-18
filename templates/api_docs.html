@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API de Datos del Agente - Documentación</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <style>
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        .endpoint {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        
+        .method {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .method-get {
+            background-color: #61affe;
+            color: white;
+        }
+        
+        .method-post {
+            background-color: #49cc90;
+            color: white;
+        }
+        
+        .code-block {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .param-table th {
+            background-color: #f8f9fa;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-text {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-robot"></i>
+                <span class="logo-text">Ibiza InfoBot API</span>
+            </a>
+            <div>
+                <a href="/datos_agente" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-left"></i> Volver a Datos
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">API de Datos del Agente Autónomo</h1>
+                <p class="lead">
+                    Esta API permite a otras IAs y sistemas automatizados acceder y utilizar los datos recolectados por el agente autónomo de Ibiza.
+                </p>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Nota:</strong> Todos los endpoints devuelven datos en formato JSON a menos que se especifique lo contrario.
+                </div>
+                
+                <h2 class="mt-5 mb-4">Endpoints Disponibles</h2>
+                
+                <!-- Endpoint GET /api/data -->
+                <div class="endpoint">
+                    <h3>
+                        <span class="method method-get">GET</span>
+                        <code>/api/data</code>
+                    </h3>
+                    <p>Obtiene datos del agente autónomo con filtros opcionales.</p>
+                    
+                    <h5>Parámetros de Consulta</h5>
+                    <table class="table table-striped param-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Requerido</th>
+                                <th>Ejemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>category</code></td>
+                                <td>string</td>
+                                <td>Filtrar por categoría. Usar "all" para todas las categorías.</td>
+                                <td>No (por defecto: "all")</td>
+                                <td><code>events</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>limit</code></td>
+                                <td>integer</td>
+                                <td>Número máximo de resultados por categoría.</td>
+                                <td>No</td>
+                                <td><code>10</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>source</code></td>
+                                <td>string</td>
+                                <td>Filtrar por fuente de datos.</td>
+                                <td>No</td>
+                                <td><code>ibiza-tourism</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>date_from</code></td>
+                                <td>string (ISO date)</td>
+                                <td>Filtrar desde una fecha específica.</td>
+                                <td>No</td>
+                                <td><code>2023-01-01</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>date_to</code></td>
+                                <td>string (ISO date)</td>
+                                <td>Filtrar hasta una fecha específica.</td>
+                                <td>No</td>
+                                <td><code>2023-12-31</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5>Ejemplos de Solicitud</h5>
+                    <p>Obtener todos los datos:</p>
+                    <pre>GET /api/data</pre>
+                    
+                    <p>Obtener datos de eventos con límite:</p>
+                    <pre>GET /api/data?category=events&limit=5</pre>
+                    
+                    <h5>Respuesta</h5>
+                    <pre class="code-block">{
+  "success": true,
+  "api_info": {
+    "version": "1.0",
+    "documentation": "/api/docs",
+    "filters_applied": {
+      "category": "events",
+      "limit": 5,
+      "source": null,
+      "date_from": null,
+      "date_to": null
+    }
+  },
+  "data": {
+    "events": [
+      {
+        "timestamp": "2023-06-15T14:30:00",
+        "source": "ibiza-tourism",
+        "data": {
+          "name": "Fiesta en Pacha",
+          "location": "Pacha Ibiza",
+          "date": "2023-07-01",
+          "description": "Gran fiesta de verano en la discoteca Pacha"
+        }
+      },
+      // Más eventos...
+    ]
+  }
+}</pre>
+                </div>
+                
+                <!-- Endpoint GET /api/download/{format}/{category} -->
+                <div class="endpoint">
+                    <h3>
+                        <span class="method method-get">GET</span>
+                        <code>/api/download/{format}/{category}</code>
+                    </h3>
+                    <p>Descarga datos de una categoría específica en el formato solicitado.</p>
+                    
+                    <h5>Parámetros de Ruta</h5>
+                    <table class="table table-striped param-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Requerido</th>
+                                <th>Ejemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>format</code></td>
+                                <td>string</td>
+                                <td>Formato de descarga. Opciones: json, csv, txt</td>
+                                <td>Sí</td>
+                                <td><code>json</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>category</code></td>
+                                <td>string</td>
+                                <td>Categoría de datos a descargar.</td>
+                                <td>Sí</td>
+                                <td><code>events</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5>Ejemplos de Solicitud</h5>
+                    <p>Descargar datos de eventos en formato JSON:</p>
+                    <pre>GET /api/download/json/events</pre>
+                </div>
+                
+                <!-- Endpoint GET /api/download/{format}/all -->
+                <div class="endpoint">
+                    <h3>
+                        <span class="method method-get">GET</span>
+                        <code>/api/download/{format}/all</code>
+                    </h3>
+                    <p>Descarga todos los datos en el formato solicitado.</p>
+                    
+                    <h5>Parámetros de Ruta</h5>
+                    <table class="table table-striped param-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Requerido</th>
+                                <th>Ejemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>format</code></td>
+                                <td>string</td>
+                                <td>Formato de descarga. Opciones: json, txt</td>
+                                <td>Sí</td>
+                                <td><code>json</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5>Ejemplos de Solicitud</h5>
+                    <p>Descargar todos los datos en formato JSON:</p>
+                    <pre>GET /api/download/json/all</pre>
+                </div>
+                
+                <!-- Endpoint POST /api/force_collection -->
+                <div class="endpoint">
+                    <h3>
+                        <span class="method method-post">POST</span>
+                        <code>/api/force_collection</code>
+                    </h3>
+                    <p>Fuerza una nueva recolección de datos del agente autónomo.</p>
+                    
+                    <h5>Cuerpo de la Solicitud</h5>
+                    <p>No requiere cuerpo.</p>
+                    
+                    <h5>Ejemplos de Solicitud</h5>
+                    <pre>POST /api/force_collection</pre>
+                    
+                    <h5>Respuesta</h5>
+                    <pre class="code-block">{
+  "success": true,
+  "message": "Se ha iniciado la recolección de datos en segundo plano"
+}</pre>
+                </div>
+                
+                <h2 class="mt-5 mb-4">Integración con IAs</h2>
+                <p>
+                    Esta API está diseñada para ser fácilmente consumida por otras IAs. Los datos están estructurados de manera que las IAs puedan procesarlos eficientemente.
+                </p>
+                
+                <h5>Ejemplo de uso con Python y requests</h5>
+                <pre class="code-block">import requests
+import json
+
+# Obtener datos de la API
+response = requests.get('http://localhost:5000/api/data?category=events&limit=10')
+data = response.json()
+
+if data['success']:
+    # Procesar los datos con la IA
+    events = data['data']['events']
+    
+    for event in events:
+        print(f"Evento: {event['data'].get('name')}")
+        print(f"Fecha: {event['data'].get('date')}")
+        print(f"Fuente: {event['source']}")
+        print("---")
+else:
+    print(f"Error: {data.get('error')}")</pre>
+                
+                <div class="alert alert-warning mt-4">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Importante:</strong> Esta API no requiere autenticación en este momento ya que está diseñada para uso local. Si se expone a Internet, se recomienda implementar autenticación.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Ibiza InfoBot API</h5>
+                    <p>Una API para integrar con el agente autónomo de Ibiza</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2023-2025 Ibiza InfoBot. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

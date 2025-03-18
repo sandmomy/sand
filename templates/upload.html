@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Contenido | Ibiza AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 2rem;
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            background-color: #ffffff;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #6c757d;
+            background-color: #f1f3f5;
+        }
+        .upload-area i {
+            font-size: 3rem;
+            color: #adb5bd;
+            margin-bottom: 1rem;
+        }
+        .file-info {
+            display: none;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+        .file-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+        .file-name {
+            font-weight: bold;
+            word-break: break-all;
+        }
+        .file-meta {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        .btn-upload {
+            margin-top: 1rem;
+        }
+        .card {
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            font-weight: bold;
+        }
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+        .flash-message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .flash-message.success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Subir Contenido a la Base de Conocimiento</h1>
+        
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message {% if 'error' in message %}error{% else %}success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <div class="card">
+            <div class="card-header">
+                Sube archivos para enriquecer la base de conocimiento de Ibiza AI
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    El contenido que subas se integrará con el chatbot para proporcionar respuestas más precisas y contextuales
+                    sobre Ibiza y sus eventos.
+                </p>
+                
+                <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+                    <!-- Área de arrastrar y soltar -->
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p class="mb-0">Arrastra y suelta archivos aquí o <strong>haz clic para seleccionar</strong></p>
+                        <input type="file" id="file" name="file" style="display:none" required>
+                    </div>
+                    
+                    <!-- Información del archivo seleccionado -->
+                    <div class="file-info" id="file-info">
+                        <img src="" alt="Vista previa" class="file-preview" id="file-preview">
+                        <p class="file-name" id="file-name"></p>
+                        <p class="file-meta" id="file-meta"></p>
+                    </div>
+                    
+                    <!-- Metadatos -->
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Título</label>
+                        <input type="text" class="form-control" id="title" name="title" required placeholder="Título descriptivo del contenido">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe el contenido y su relevancia para Ibiza"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Etiquetas (separadas por comas)</label>
+                        <input type="text" class="form-control" id="tags" name="tags" placeholder="playa, fiesta, dj, música, etc.">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content_type" class="form-label">Tipo de Contenido</label>
+                        <select class="form-select" id="content_type" name="content_type" required>
+                            <option value="image">Imagen</option>
+                            <option value="video">Video</option>
+                            <option value="document">Documento</option>
+                            <option value="website">Sitio Web (HTML)</option>
+                            <option value="audio">Audio</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-upload" disabled id="submit-btn">
+                        <i class="fas fa-upload me-2"></i> Subir Contenido
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="/library" class="btn btn-outline-secondary">
+                <i class="fas fa-photo-video me-2"></i> Ver Biblioteca de Contenido
+            </a>
+            <a href="/" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-home me-2"></i> Volver al Inicio
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file');
+        const fileInfo = document.getElementById('file-info');
+        const filePreview = document.getElementById('file-preview');
+        const fileName = document.getElementById('file-name');
+        const fileMeta = document.getElementById('file-meta');
+        const submitBtn = document.getElementById('submit-btn');
+        const contentTypeSelect = document.getElementById('content_type');
+        
+        // Evento para click en área de upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // Prevenir comportamiento por defecto de arrastrar y soltar
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Resaltar área de arrastrar cuando el archivo está encima
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            uploadArea.classList.add('dragover');
+        }
+        
+        function unhighlight() {
+            uploadArea.classList.remove('dragover');
+        }
+        
+        // Manejar archivos soltados
+        uploadArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileInfo(files[0]);
+            }
+        }
+        
+        // Cuando se selecciona un archivo, mostrar información
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                updateFileInfo(this.files[0]);
+            }
+        });
+        
+        // Actualizar tipo de contenido basado en el archivo
+        function detectContentType(file) {
+            const type = file.type.split('/')[0]; // image, video, etc.
+            
+            if (type === 'image') {
+                contentTypeSelect.value = 'image';
+            } else if (type === 'video') {
+                contentTypeSelect.value = 'video';
+            } else if (type === 'audio') {
+                contentTypeSelect.value = 'audio';
+            } else if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+                contentTypeSelect.value = 'website';
+            } else {
+                contentTypeSelect.value = 'document';
+            }
+        }
+        
+        // Mostrar información del archivo
+        function updateFileInfo(file) {
+            // Detectar tipo de contenido
+            detectContentType(file);
+            
+            // Mostrar nombre
+            fileName.textContent = file.name;
+            
+            // Mostrar metadatos
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileMeta.textContent = `Tipo: ${file.type || 'Desconocido'} | Tamaño: ${sizeMB} MB`;
+            
+            // Mostrar vista previa si es imagen
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    filePreview.src = e.target.result;
+                    filePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                filePreview.style.display = 'none';
+            }
+            
+            // Mostrar el div de información
+            fileInfo.style.display = 'block';
+            
+            // Habilitar botón de subida
+            submitBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<div class="learn-tabs">
+    <button class="tab-button active" data-tab="url-tab">URL</button>
+    <button class="tab-button" data-tab="text-tab">Texto</button>
+    <button class="tab-button" data-tab="scraping-tab">Scraping</button>
+</div>
+
+<div id="scraping-tab" class="tab-content">
+    <form id="scraping-form">
+        <div class="form-group">
+            <label for="scraping-url" class="form-label">URL del sitio a analizar:</label>
+            <input type="url" id="scraping-url" class="form-input" placeholder="https://ejemplo.com/eventos-ibiza" required>
+        </div>
+        <div class="form-group">
+            <label for="scraping-category" class="form-label">Categoría:</label>
+            <select id="scraping-category" class="form-input">
+                <option value="eventos">Eventos</option>
+                <option value="lugares">Lugares</option>
+                <option value="restaurantes">Restaurantes</option>
+                <option value="playas">Playas</option>
+                <option value="general">General</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="scraping-tool" class="form-label">Herramienta de scraping:</label>
+            <select id="scraping-tool" class="form-input">
+                <option value="auto">Automática (recomendado)</option>
+                <option value="beautifulsoup">Beautiful Soup - Páginas estáticas simples</option>
+                <option value="scrapy">Scrapy - Proyectos grandes</option>
+                <option value="selenium">Selenium - Contenido dinámico con JavaScript</option>
+                <option value="playwright">Playwright - Navegación completa</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="scraping-depth" class="form-label">Profundidad de análisis:</label>
+            <select id="scraping-depth" class="form-input">
+                <option value="1">Básico (solo página principal)</option>
+                <option value="2">Intermedio (incluye enlaces directos)</option>
+                <option value="3">Avanzado (análisis completo)</option>
+            </select>
+        </div>
+        <div class="scraping-options">
+            <h3 class="options-title">Opciones avanzadas</h3>
+            <div class="form-check">
+                <input type="checkbox" id="scraping-images" class="form-check-input">
+                <label for="scraping-images" class="form-check-label">Incluir imágenes y multimedia</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="scraping-js" class="form-check-input">
+                <label for="scraping-js" class="form-check-label">Procesar contenido JavaScript</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="scraping-structured" class="form-check-input" checked>
+                <label for="scraping-structured" class="form-check-label">Extraer datos estructurados</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="scraping-save" class="form-check-input" checked>
+                <label for="scraping-save" class="form-check-label">Guardar resultados para consultas futuras</label>
+            </div>
+        </div>
+        <button type="submit" class="form-submit">Iniciar Scraping</button>
+    </form>
+</div>
+
+<style>
+    /* Nuevos estilos para las opciones de scraping */
+    .scraping-options {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+
+    .options-title {
+        color: #7b68ee;
+        font-size: 1.1rem;
+        margin-top: 0;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .form-check {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-input {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+        accent-color: #7b68ee;
+    }
+
+    .form-check-label {
+        color: #eee;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    document.getElementById('scraping-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const scrapingData = {
+            url: document.getElementById('scraping-url').value.trim(),
+            category: document.getElementById('scraping-category').value,
+            tool: document.getElementById('scraping-tool').value,
+            depth: document.getElementById('scraping-depth').value,
+            include_images: document.getElementById('scraping-images').checked,
+            process_js: document.getElementById('scraping-js').checked,
+            extract_structured: document.getElementById('scraping-structured').checked,
+            save_results: document.getElementById('scraping-save').checked
+        };
+        
+        if (!scrapingData.url) return;
+        
+        // Mostrar mensaje de procesamiento
+        addBotMessage('Iniciando análisis del sitio. Esto puede tardar unos momentos...');
+        
+        fetch('/api/scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(scrapingData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let resultMessage = `✅ He analizado correctamente ${data.url}.\n\n`;
+                
+                if (data.extracted_items && data.extracted_items.length > 0) {
+                    resultMessage += `Encontré ${data.extracted_items.length} elementos de información relevante.\n\n`;
+                    
+                    // Mostrar un resumen de lo encontrado
+                    if (data.summary) {
+                        resultMessage += `**Resumen:** ${data.summary}\n\n`;
+                    }
+                    
+                    // Mostrar ejemplos de la información extraída
+                    resultMessage += "**Ejemplos de información extraída:**\n";
+                    const examples = data.extracted_items.slice(0, 3); // Mostrar solo 3 ejemplos
+                    examples.forEach((item, index) => {
+                        resultMessage += `${index+1}. ${item.title || 'Elemento'}\n`;
+                        if (item.description) {
+                            // Limitar la descripción a 100 caracteres
+                            const shortDesc = item.description.length > 100 ? 
+                                item.description.substring(0, 100) + '...' : 
+                                item.description;
+                            resultMessage += `   ${shortDesc}\n`;
+                        }
+                        if (item.date) {
+                            resultMessage += `   📅 ${item.date}\n`;
+                        }
+                        if (item.location) {
+                            resultMessage += `   📍 ${item.location}\n`;
+                        }
+                        resultMessage += '\n';
+                    });
+                    
+                    resultMessage += "Ahora puedes preguntarme sobre cualquier información relacionada con este sitio.";
+                } else {
+                    resultMessage += "No pude encontrar información relevante. Quizás debas probar con un sitio diferente o ajustar la categoría.";
+                }
+                
+                addBotMessage(resultMessage);
+                document.getElementById('scraping-url').value = '';
+            } else {
+                addBotMessage(`❌ Lo siento, ocurrió un error al analizar el sitio: ${data.error || 'Error desconocido'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            addBotMessage('❌ Ha ocurrido un error durante el análisis del sitio. Por favor, intenta de nuevo más tarde.');
+        });
+    });
+</script>
+
+<script>
+    // Área de chat
+    const chatContainer = document.createElement('div');
+    chatContainer.className = 'chat-container';
+    document.body.appendChild(chatContainer);
+
+    // Función para añadir mensajes del usuario
+    function addUserMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'chat-message user-message';
+        messageElement.innerHTML = `<div class="message-content">${message}</div>`;
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Función para añadir mensajes del bot
+    function addBotMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'chat-message bot-message';
+        // Convertir markdown simple a HTML
+        const formattedMessage = message
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')              // Italic
+            .replace(/\n/g, '<br>');                           // Line breaks
+        
+        messageElement.innerHTML = `
+            <div class="bot-avatar">🤖</div>
+            <div class="message-content">${formattedMessage}</div>
+        `;
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Añadir campo de entrada y botón de envío
+    const inputContainer = document.createElement('div');
+    inputContainer.className = 'chat-input-container';
+    
+    const chatInput = document.createElement('input');
+    chatInput.type = 'text';
+    chatInput.className = 'chat-input';
+    chatInput.placeholder = 'Escribe un mensaje...';
+    
+    const sendButton = document.createElement('button');
+    sendButton.className = 'send-button';
+    sendButton.textContent = 'Enviar';
+    
+    inputContainer.appendChild(chatInput);
+    inputContainer.appendChild(sendButton);
+    document.body.appendChild(inputContainer);
+
+    // Manejar envío de mensajes
+    function handleSendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        addUserMessage(message);
+        chatInput.value = '';
+        
+        // Enviar mensaje al endpoint del bot
+        fetch('/api/bot_chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                addBotMessage(data.message);
+            } else {
+                addBotMessage('Lo siento, hubo un problema al procesar tu mensaje.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            addBotMessage('Ha ocurrido un error de conexión. Por favor, intenta de nuevo más tarde.');
+        });
+    }
+    
+    sendButton.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleSendMessage();
+        }
+    });
+
+    // Mensaje inicial
+    addBotMessage('👋 ¡Hola! Soy IbizaInfoBot, tu asistente virtual para información sobre Ibiza. Puedes preguntarme sobre playas, restaurantes, eventos o usar la herramienta de scraping para analizar sitios web.');
+
+    // Agregar estilos para el chat
+    const chatStyles = document.createElement('style');
+    chatStyles.textContent = `
+        .chat-container {
+            max-width: 90%;
+            height: 400px;
+            margin: 20px auto;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .user-message {
+            justify-content: flex-end;
+        }
+        
+        .bot-message {
+            justify-content: flex-start;
+        }
+        
+        .bot-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #7b68ee;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 70%;
+        }
+        
+        .user-message .message-content {
+            background-color: #7b68ee;
+            color: white;
+        }
+        
+        .bot-message .message-content {
+            background-color: #333;
+            color: #eee;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            max-width: 90%;
+            margin: 10px auto;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px 0 0 20px;
+            background-color: #333;
+            color: white;
+        }
+        
+        .send-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 0 20px 20px 0;
+            background-color: #7b68ee;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .send-button:hover {
+            background-color: #6a5acd;
+        }
+    `;
+    document.head.appendChild(chatStyles);
+</script>

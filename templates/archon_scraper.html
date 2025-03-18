@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archon Scraper - Asistente IA de Ibiza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header {
+            background: linear-gradient(135deg, #0077b6, #48cae4);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0096c7, #00b4d8);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold;
+        }
+        .result-card {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .btn-primary {
+            background-color: #0077b6;
+            border-color: #0077b6;
+        }
+        .btn-primary:hover {
+            background-color: #023e8a;
+            border-color: #023e8a;
+        }
+        .btn-outline-primary {
+            color: #0077b6;
+            border-color: #0077b6;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0077b6;
+            color: white;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 0;
+            margin-top: 50px;
+        }
+        .model-badge {
+            background-color: #0d6efd;
+            color: white;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            position: relative;
+        }
+        .user-message {
+            background-color: #0077b6;
+            color: white;
+            margin-left: auto;
+            border-top-right-radius: 0;
+        }
+        .bot-message {
+            background-color: #e9ecef;
+            color: #212529;
+            margin-right: auto;
+            border-top-left-radius: 0;
+        }
+        .chat-form textarea {
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container text-center">
+            <h1><i class="fas fa-robot me-2"></i> Archon Scraper - Asistente IA de Ibiza</h1>
+            <p class="lead">Extrae información estructurada de sitios web sobre Ibiza usando Archon</p>
+            <div class="mt-3">
+                <span class="model-badge"><i class="fas fa-microchip me-1"></i> Model: <span id="model-name">gemini-pro</span></span>
+                <span class="model-badge"><i class="fas fa-brain me-1"></i> Reasoner: <span id="reasoner-name">deepseek-r1:7b-8k</span></span>
+                <a href="/asistente" class="btn btn-outline-light">Ir al Asistente Virtual <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Barra de navegación para interfaces de scraping -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body d-flex justify-content-between">
+                        <div>
+                            <span class="badge bg-primary me-2">Estás en:</span> Interfaz original de Archon Scraper
+                        </div>
+                        <a href="{{ url_for('auto_scraper_ui') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-exchange-alt me-1"></i> Ir a Interfaz principal de Auto-Scraper
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-spider me-2"></i> Scraping con IA
+                    </div>
+                    <div class="card-body">
+                        <form id="scrape-form">
+                            <div class="mb-3">
+                                <label for="url" class="form-label">URL a analizar</label>
+                                <input type="url" class="form-control" id="url" placeholder="https://ejemplo.com/pagina-ibiza" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Categoría</label>
+                                <select class="form-select" id="category" required>
+                                    <option value="">Selecciona una categoría</option>
+                                    <option value="general">General</option>
+                                    <option value="eventos">Eventos</option>
+                                    <option value="lugares">Lugares</option>
+                                    <option value="restaurantes">Restaurantes</option>
+                                    <option value="hoteles">Hoteles</option>
+                                    <option value="playas">Playas</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" id="scrape-button">
+                                <i class="fas fa-search me-2"></i> Extraer Datos
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <i class="fas fa-cogs me-2"></i> Configuración de Archon
+                    </div>
+                    <div class="card-body">
+                        <form id="config-form">
+                            <div class="mb-3">
+                                <label for="model-temp" class="form-label">Temperatura del modelo: <span id="temp-value">0.7</span></label>
+                                <input type="range" class="form-range" id="model-temp" min="0" max="1" step="0.1" value="0.7">
+                            </div>
+                            <div class="mb-3">
+                                <label for="reasoning-temp" class="form-label">Temperatura del razonamiento: <span id="reasoning-value">0.2</span></label>
+                                <input type="range" class="form-range" id="reasoning-temp" min="0" max="1" step="0.1" value="0.2">
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary">Guardar Configuración</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-cog me-2"></i> Control de Scraping Automático
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>Estado:</strong></span>
+                                <span id="scraping-status" class="badge bg-danger">Inactivo</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>Scraping Automático:</strong></span>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="scraping-toggle">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>Progreso:</strong></span>
+                                <div class="progress" style="width: 60%;">
+                                    <div id="scraping-progress" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                        <span id="progress-percentage">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>Última ejecución:</strong></span>
+                                <span id="last-run-time">Nunca</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>Base de conocimiento:</strong></span>
+                                <span id="kb-stats">0 URLs / 0 segmentos</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Opciones de Navegador para Scraping -->
+                        <div class="mt-3 mb-3">
+                            <h6 class="border-bottom pb-2 mb-2"><i class="fas fa-browser me-1"></i> Opciones de Navegador</h6>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="headless-mode" checked>
+                                <label class="form-check-label" for="headless-mode">Modo Headless (sin interfaz gráfica)</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="disable-images" checked>
+                                <label class="form-check-label" for="disable-images">Desactivar carga de imágenes</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Acciones de Scraping -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <button id="btn-test-search" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                    <i class="fas fa-search me-1"></i> Probar Búsqueda
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button id="btn-update-all" class="btn btn-outline-success btn-sm w-100 mb-2">
+                                    <i class="fas fa-sync me-1"></i> Actualizar Todo
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Búsqueda personalizada -->
+                        <div class="mt-4">
+                            <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-search me-1"></i> Búsqueda Personalizada</h6>
+                            <form id="custom-search-form">
+                                <div class="mb-3">
+                                    <label for="search-query" class="form-label">Consulta de búsqueda:</label>
+                                    <input type="text" class="form-control" id="search-query" placeholder="Ej: mejores playas de Ibiza 2025">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="max-results" class="form-label">Máx. resultados:</label>
+                                            <select class="form-select" id="max-results">
+                                                <option value="2">2</option>
+                                                <option value="3" selected>3</option>
+                                                <option value="5">5</option>
+                                                <option value="10">10</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="max-depth" class="form-label">Profundidad:</label>
+                                            <select class="form-select" id="max-depth">
+                                                <option value="0">Solo página principal</option>
+                                                <option value="1" selected>Seguir 1 nivel de enlaces</option>
+                                                <option value="2">Seguir 2 niveles</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-1"></i> Buscar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card result-card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-search me-2"></i> Resultados</span>
+                            <button type="button" id="btn-show-search-form" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-search-plus me-1"></i> Prueba personalizada
+                            </button>
+                        </div>
+                    </div>
+                    <div id="search-form-container" class="card-body border-bottom" style="display: none;">
+                        <h5>Prueba de búsqueda personalizada</h5>
+                        <form id="google-search-test-form">
+                            <div class="mb-3">
+                                <label for="search-query" class="form-label">Consulta de búsqueda</label>
+                                <input type="text" class="form-control" id="search-query" placeholder="Ej: playas de Ibiza" value="playas de Ibiza">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="max-results" class="form-label">Resultados máximos</label>
+                                        <input type="number" class="form-control" id="max-results" min="1" max="10" value="3">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="max-depth" class="form-label">Profundidad máxima</label>
+                                        <input type="number" class="form-control" id="max-depth" min="1" max="3" value="1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i> Ejecutar búsqueda
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="results-container" class="card-body">
+                        <div class="text-center py-5">
+                            <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                            <p class="lead">Utiliza la sección de control para iniciar el scraping automático o ejecutar una búsqueda de prueba.</p>
+                            <p class="text-muted">Los resultados se mostrarán aquí</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <i class="fas fa-info-circle me-2"></i> Información del Sistema
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Fuentes configuradas</h6>
+                                <ul>
+                                    {% for source in config.sources %}
+                                    <li>{{ source.name }} <span class="badge bg-{% if source.enabled %}success{% else %}secondary{% endif %} ms-1">{% if source.enabled %}Activa{% else %}Inactiva{% endif %}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Búsquedas configuradas</h6>
+                                <ul>
+                                    {% for search in config.searches %}
+                                    <li>{{ search.name }} <span class="badge bg-{% if search.enabled %}success{% else %}secondary{% endif %} ms-1">{% if search.enabled %}Activa{% else %}Inactiva{% endif %}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    
+    <script>
+        // Configuración de toastr
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000"
+        };
+        
+        $(document).ready(function() {
+            // Inicializar estado
+            updateScraperStatus();
+            
+            // Actualizar estado cada 10 segundos
+            setInterval(updateScraperStatus, 10000);
+            
+            // Toggle de scraping automático
+            $('#scraping-toggle').on('change', function() {
+                const isActive = $(this).prop('checked');
+                toggleScraperStatus(isActive);
+            });
+            
+            // Botón de test de búsqueda
+            $('#btn-test-search').on('click', function() {
+                runTestSearch();
+            });
+            
+            // Botón de actualizar todo
+            $('#btn-update-all').on('click', function() {
+                updateAllSources();
+            });
+            
+            // Formulario de búsqueda personalizada
+            $('#custom-search-form').on('submit', function(e) {
+                e.preventDefault();
+                runCustomSearch();
+            });
+            
+            // Opciones de navegador
+            $('#headless-mode, #disable-images').on('change', function() {
+                updateBrowserOptions();
+            });
+        });
+        
+        // Función para actualizar el estado del scraper
+        function updateScraperStatus() {
+            $.ajax({
+                url: '/api/scraper/status',
+                method: 'GET',
+                success: function(data) {
+                    // Actualizar indicador de estado
+                    if (data.is_running) {
+                        $('#scraping-status').removeClass('bg-danger').addClass('bg-success').text('Activo');
+                    } else {
+                        $('#scraping-status').removeClass('bg-success').addClass('bg-danger').text('Inactivo');
+                    }
+                    
+                    // Actualizar toggle
+                    $('#scraping-toggle').prop('checked', data.is_running);
+                    
+                    // Actualizar progreso
+                    $('#scraping-progress').css('width', data.progress + '%');
+                    $('#progress-percentage').text(data.progress + '%');
+                    
+                    // Actualizar última ejecución
+                    if (data.last_run) {
+                        const lastRunDate = new Date(data.last_run);
+                        $('#last-run-time').text(lastRunDate.toLocaleString());
+                    }
+                    
+                    // Actualizar estadísticas de la base de conocimiento
+                    if (data.knowledge_base) {
+                        $('#kb-stats').text(
+                            `${data.knowledge_base.total_urls} URLs / ${data.knowledge_base.total_segments} segmentos`
+                        );
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error obteniendo estado del scraper:', error);
+                    $('#scraping-status').removeClass('bg-success').addClass('bg-danger').text('Error');
+                }
+            });
+        }
+        
+        // Función para activar/desactivar el scraper
+        function toggleScraperStatus(activate) {
+            $.ajax({
+                url: '/api/scraper/toggle',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ active: activate }),
+                success: function(data) {
+                    toastr.success(data.message);
+                    updateScraperStatus();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error cambiando estado del scraper:', error);
+                    toastr.error('Error al cambiar el estado del scraper');
+                    $('#scraping-toggle').prop('checked', !activate);
+                }
+            });
+        }
+        
+        // Función para ejecutar una prueba de búsqueda
+        function runTestSearch() {
+            $('#btn-test-search').prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Probando...'
+            );
+            
+            $.ajax({
+                url: '/api/scraper/test-search',
+                method: 'POST',
+                success: function(data) {
+                    if (data.success) {
+                        toastr.success('Búsqueda de prueba completada correctamente');
+                        
+                        // Mostrar resultados
+                        let resultsText = `<strong>Búsqueda:</strong> ${data.search_name}<br>`;
+                        resultsText += `<strong>Consulta:</strong> ${data.query}<br>`;
+                        resultsText += `<strong>Resultados:</strong> ${data.results_count}<br><br>`;
+                        
+                        if (data.items && data.items.length > 0) {
+                            resultsText += '<strong>Títulos encontrados:</strong><ul>';
+                            data.items.forEach(item => {
+                                resultsText += `<li>${item}</li>`;
+                            });
+                            resultsText += '</ul>';
+                        }
+                        
+                        showResultsModal('Resultados de búsqueda de prueba', resultsText);
+                    } else {
+                        toastr.error(`Error en la búsqueda: ${data.error || 'Error desconocido'}`);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error ejecutando búsqueda de prueba:', error);
+                    toastr.error('Error al ejecutar la búsqueda de prueba');
+                },
+                complete: function() {
+                    $('#btn-test-search').prop('disabled', false).html(
+                        '<i class="fas fa-search me-1"></i> Probar Búsqueda'
+                    );
+                }
+            });
+        }
+        
+        // Función para actualizar todas las fuentes
+        function updateAllSources() {
+            if (!confirm('¿Estás seguro de querer actualizar todas las fuentes y búsquedas? Este proceso puede tardar varios minutos.')) {
+                return;
+            }
+            
+            $('#btn-update-all').prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Actualizando...'
+            );
+            
+            $.ajax({
+                url: '/api/scraper/update-all',
+                method: 'POST',
+                success: function(data) {
+                    toastr.success('Actualización de fuentes iniciada');
+                    toastr.info('Este proceso puede tardar varios minutos. El progreso se actualizará automáticamente.');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error iniciando actualización de fuentes:', error);
+                    toastr.error('Error al iniciar la actualización de fuentes');
+                },
+                complete: function() {
+                    $('#btn-update-all').prop('disabled', false).html(
+                        '<i class="fas fa-sync me-1"></i> Actualizar Todo'
+                    );
+                }
+            });
+        }
+        
+        // Función para ejecutar una búsqueda personalizada
+        function runCustomSearch() {
+            const query = $('#search-query').val().trim();
+            
+            if (!query) {
+                toastr.warning('Por favor ingresa una consulta de búsqueda');
+                return;
+            }
+            
+            const maxResults = $('#max-results').val();
+            const maxDepth = $('#max-depth').val();
+            
+            $('#custom-search-form button[type="submit"]').prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Buscando...'
+            );
+            
+            $.ajax({
+                url: '/api/scraper/custom-search',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    query: query,
+                    max_results: parseInt(maxResults),
+                    max_depth: parseInt(maxDepth)
+                }),
+                success: function(data) {
+                    if (data.success) {
+                        toastr.success('Búsqueda completada correctamente');
+                        
+                        // Mostrar resultados
+                        let resultsText = `<strong>Consulta:</strong> ${data.query}<br>`;
+                        resultsText += `<strong>Resultados:</strong> ${data.results_count}<br><br>`;
+                        
+                        if (data.items && data.items.length > 0) {
+                            resultsText += '<strong>Resultados encontrados:</strong><ul>';
+                            data.items.forEach(item => {
+                                resultsText += `<li>${item}</li>`;
+                            });
+                            resultsText += '</ul>';
+                        }
+                        
+                        showResultsModal('Resultados de búsqueda personalizada', resultsText);
+                    } else {
+                        toastr.error(`Error en la búsqueda: ${data.error || 'Error desconocido'}`);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error ejecutando búsqueda personalizada:', error);
+                    toastr.error('Error al ejecutar la búsqueda personalizada');
+                },
+                complete: function() {
+                    $('#custom-search-form button[type="submit"]').prop('disabled', false).html(
+                        '<i class="fas fa-search me-1"></i> Buscar'
+                    );
+                }
+            });
+        }
+        
+        // Función para actualizar opciones de navegador
+        function updateBrowserOptions() {
+            const headlessMode = $('#headless-mode').prop('checked');
+            const disableImages = $('#disable-images').prop('checked');
+            
+            $.ajax({
+                url: '/api/scraper/browser-options',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    headless: headlessMode,
+                    disable_images: disableImages
+                }),
+                success: function(data) {
+                    toastr.success('Opciones de navegador actualizadas');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error actualizando opciones de navegador:', error);
+                    toastr.error('Error al actualizar las opciones de navegador');
+                }
+            });
+        }
+        
+        // Función para mostrar resultados en un modal
+        function showResultsModal(title, content) {
+            // Crear modal si no existe
+            if ($('#results-modal').length === 0) {
+                $('body').append(`
+                    <div class="modal fade" id="results-modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"></h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body"></div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            // Actualizar y mostrar modal
+            $('#results-modal .modal-title').html(title);
+            $('#results-modal .modal-body').html(content);
+            
+            const modal = new bootstrap.Modal(document.getElementById('results-modal'));
+            modal.show();
+        }
+    </script>
+    <script>
+        // Elementos DOM
+        const scrapingStatus = document.getElementById('scraping-status');
+        const scrapingToggle = document.getElementById('scraping-toggle');
+        const progressBar = document.getElementById('scraping-progress');
+        const progressPercentage = document.getElementById('progress-percentage');
+        const lastRunTime = document.getElementById('last-run-time');
+        const btnTestSearch = document.getElementById('btn-test-search');
+        const btnUpdateAll = document.getElementById('btn-update-all');
+        const resultsContainer = document.getElementById('results-container');
+        const searchFormContainer = document.getElementById('search-form-container');
+        const btnShowSearchForm = document.getElementById('btn-show-search-form');
+        
+        // Funciones de utilidad
+        function showLoading(message) {
+            if (resultsContainer) {
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="lead">${message || 'Cargando...'}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function hideLoading() {
+            // No hacer nada si resultsContainer es null
+            if (!resultsContainer) return;
+            
+            // Si el contenedor tiene un spinner, restaurarlo al estado por defecto
+            if (resultsContainer.querySelector('.spinner-border')) {
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                        <p class="lead">Utiliza la sección de control para iniciar el scraping automático o ejecutar una búsqueda de prueba.</p>
+                        <p class="text-muted">Los resultados se mostrarán aquí</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function formatDateTime(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                };
+                return date.toLocaleDateString('es-ES', options);
+            } catch (e) {
+                console.error('Error al formatear fecha:', e);
+                return 'Fecha inválida';
+            }
+        }
+        
+        // Función para actualizar la UI basado en el estado
+        function updateScrapingUI(status) {
+            if (status.isActive) {
+                scrapingStatus.textContent = 'Activo';
+                scrapingStatus.className = 'badge bg-success';
+                if (scrapingToggle) scrapingToggle.checked = true;
+            } else {
+                scrapingStatus.textContent = 'Inactivo';
+                scrapingStatus.className = 'badge bg-danger';
+                if (scrapingToggle) scrapingToggle.checked = false;
+            }
+            
+            if (progressBar) {
+                progressBar.style.width = status.progress + '%';
+                progressBar.setAttribute('aria-valuenow', status.progress);
+            }
+            
+            if (progressPercentage) progressPercentage.textContent = status.progress + '%';
+            if (lastRunTime) lastRunTime.textContent = formatDateTime(status.lastRun);
+        }
+        
+        // Función para obtener el estado del scraping
+        function getScrapingStatus() {
+            fetch('/api/scraping_status')
+                .then(response => response.json())
+                .then(status => {
+                    updateScrapingUI(status);
+                })
+                .catch(error => {
+                    console.error('Error al obtener estado del scraping:', error);
+                });
+        }
+        
+        // Función para cambiar el estado del scraping
+        function toggleScraping(active) {
+            fetch('/api/toggle_scraping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ active: active })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Actualizar la UI con los datos devueltos
+                    updateScrapingUI({
+                        isActive: data.isActive,
+                        progress: data.progress,
+                        lastRun: data.lastRun
+                    });
+                    
+                    showMessage('success', active ? 'Scraping automático activado' : 'Scraping automático desactivado');
+                } else {
+                    showMessage('error', 'Error: ' + data.error);
+                    // Revertir el cambio en el toggle si hubo error
+                    if (scrapingToggle) scrapingToggle.checked = !active;
+                }
+            })
+            .catch(error => {
+                console.error('Error al cambiar estado del scraping:', error);
+                showMessage('error', 'Error de conexión al cambiar el estado');
+                // Revertir el cambio en el toggle si hubo error
+                if (scrapingToggle) scrapingToggle.checked = !active;
+            });
+        }
+        
+        // Función para ejecutar una prueba de búsqueda
+        function runTestSearch() {
+            showLoading('Ejecutando búsqueda de prueba...');
+            
+            fetch('/api/auto-scraper/test-search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success && data.result.success) {
+                    showMessage('success', `Búsqueda de prueba completada: ${data.result.results_count} resultados`);
+                    // Mostrar resultados en el área de resultados
+                    const resultsContainer = document.getElementById('results-container');
+                    if (resultsContainer) {
+                        resultsContainer.innerHTML = `
+                            <div class="card-header">
+                                <i class="fas fa-search me-2"></i> Resultados de Búsqueda
+                            </div>
+                            <div class="card-body">
+                                <h5>${data.result.search_name}</h5>
+                                <p>Consulta: "${data.result.query}"</p>
+                                <p>Categoría: ${data.result.category}</p>
+                                <p>Resultados encontrados: ${data.result.results_count}</p>
+                                <hr>
+                                <h6>Elementos encontrados:</h6>
+                                <ul>
+                                    ${data.result.items.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                } else {
+                    showMessage('error', `Error: ${data.result?.error || data.error || 'Fallo en la búsqueda'}`);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error al ejecutar búsqueda de prueba:', error);
+                showMessage('error', 'Error de conexión al ejecutar la búsqueda');
+            });
+        }
+        
+        // Función para actualizar todas las fuentes
+        function updateAllSources() {
+            showLoading('Iniciando actualización de todas las fuentes...');
+            
+            fetch('/api/auto-scraper/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'start' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showMessage('success', 'Actualización de fuentes iniciada en segundo plano');
+                    // Actualizar estado de la UI
+                    getScrapingStatus();
+                } else {
+                    showMessage('error', `Error: ${data.error || 'No se pudo iniciar la actualización'}`);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error al iniciar actualización:', error);
+                showMessage('error', 'Error de conexión al iniciar la actualización');
+            });
+        }
+        
+        // Función para realizar una búsqueda personalizada
+        function performCustomSearch(e) {
+            e.preventDefault();
+            
+            const query = document.getElementById('search-query').value;
+            const maxResults = document.getElementById('max-results').value;
+            const maxDepth = document.getElementById('max-depth').value;
+            
+            if (!query) {
+                showMessage('danger', 'Por favor, ingresa una consulta de búsqueda');
+                return;
+            }
+            
+            showLoading('Realizando búsqueda y scraping...');
+            
+            fetch('/api/google-search-test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    max_results: parseInt(maxResults),
+                    max_depth: parseInt(maxDepth)
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultsContainer.innerHTML = '';
+                
+                if (!data.success) {
+                    showMessage('danger', `Error: ${data.error}`);
+                    return;
+                }
+                
+                // Construir UI para mostrar resultados
+                const resultsDiv = document.createElement('div');
+                
+                // Encabezado con información de la búsqueda
+                const header = document.createElement('div');
+                header.className = 'mb-4';
+                header.innerHTML = `
+                    <h5>Resultados de búsqueda para: "${data.query}"</h5>
+                    <p class="text-muted">Se encontraron ${data.results_count} resultados</p>
+                    <hr>
+                `;
+                resultsDiv.appendChild(header);
+                
+                // Mostrar cada resultado
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach((result, index) => {
+                        const resultCard = document.createElement('div');
+                        resultCard.className = 'card mb-3';
+                        resultCard.innerHTML = `
+                            <div class="card-body">
+                                <h5 class="card-title">${result.title || 'Sin título'}</h5>
+                                <a href="${result.url}" target="_blank" class="card-link text-truncate d-block mb-2">
+                                    ${result.url}
+                                </a>
+                                <p class="card-text">${result.snippet || 'Sin descripción'}</p>
+                            </div>
+                        `;
+                        resultsDiv.appendChild(resultCard);
+                    });
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="alert alert-warning">
+                            No se encontraron resultados para tu búsqueda
+                        </div>
+                    `;
+                }
+                
+                resultsContainer.appendChild(resultsDiv);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('danger', 'Error al procesar la solicitud');
+            });
+        }
+        
+        // Event listener para el toggle
+        if (scrapingToggle) {
+            scrapingToggle.addEventListener('change', function() {
+                toggleScraping(this.checked);
+            });
+        }
+        
+        // Event listeners para los botones
+        if (btnTestSearch) {
+            btnTestSearch.addEventListener('click', runTestSearch);
+        }
+        
+        if (btnUpdateAll) {
+            btnUpdateAll.addEventListener('click', updateAllSources);
+        }
+        
+        // Event listener para mostrar/ocultar el formulario de búsqueda personalizada
+        if (btnShowSearchForm) {
+            btnShowSearchForm.addEventListener('click', function() {
+                if (searchFormContainer.style.display === 'none') {
+                    searchFormContainer.style.display = 'block';
+                } else {
+                    searchFormContainer.style.display = 'none';
+                }
+            });
+        }
+        
+        // Event listener para el formulario de búsqueda personalizada
+        const searchForm = document.getElementById('google-search-test-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', performCustomSearch);
+        }
+        
+        // Función para mostrar mensajes
+        function showMessage(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Insertar en la parte superior del contenedor principal
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+                
+                // Auto-eliminar después de 5 segundos
+                setTimeout(() => {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 300);
+                }, 5000);
+            }
+        }
+        
+        // Obtener estado inicial y actualizar cada 5 segundos
+        getScrapingStatus();
+        setInterval(getScrapingStatus, 5000);
+    </script>
+    <footer class="footer text-center py-3 mt-5">
+        <div class="container">
+            <p>Desarrollado con <i class="fas fa-heart text-danger"></i> usando Archon, Flask y JavaScript</p>
+            <p>
+                <small>Modelos utilizados: OpenRouter (gemini-pro) + OpenAI Embeddings + DeepSeek Reasoner</small>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Scraper - Redireccionando</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ibiza_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+            background-color: #252525;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #ffcc00;
+            color: #1a1a1a;
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #e6b800;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background-color: #333;
+            color: #f5f5f5;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #444;
+            box-shadow: 0 5px 15px rgba(68, 68, 68, 0.4);
+        }
+        
+        .icon {
+            margin-right: 8px;
+        }
+        
+        .redirect-countdown {
+            font-size: 16px;
+            color: #b0b0b0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-robot icon"></i> Auto-Scraper - Búsquedas Automáticas</h1>
+        
+        <p>El Auto-Scraper está ejecutándose en un servidor separado para mejorar el rendimiento y la estabilidad del sistema principal.</p>
+        
+        <div>
+            <a href="http://localhost:5001/auto-scraper" class="btn" id="redirectBtn">
+                <i class="fas fa-external-link-alt icon"></i> Ir a la interfaz del Auto-Scraper
+            </a>
+            
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-home icon"></i> Volver al inicio
+            </a>
+        </div>
+        
+        <p class="redirect-countdown" id="countdown">Redireccionando automáticamente en 5 segundos...</p>
+    </div>
+    
+    <script>
+        // Redirección automática
+        let seconds = 5;
+        const countdownElement = document.getElementById('countdown');
+        
+        const interval = setInterval(() => {
+            seconds--;
+            countdownElement.textContent = `Redireccionando automáticamente en ${seconds} segundos...`;
+            
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = 'http://localhost:5001/auto-scraper';
+            }
+        }, 1000);
+        
+        // Detener la redirección automática si el usuario interactúa con la página
+        document.addEventListener('click', () => {
+            clearInterval(interval);
+            countdownElement.textContent = 'Redirección automática cancelada';
+        });
+    </script>
+</body>
+</html>

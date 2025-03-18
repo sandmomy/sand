@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos Recolectados - Agente Autónomo de Ibiza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .data-card {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .category-heading {
+            background-color: #f0f8ff;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+        }
+        .timestamp {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 0 0 8px 8px;
+            overflow-x: auto;
+        }
+        .nav-link.active {
+            font-weight: bold;
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4 text-center">Datos Recolectados por el Agente Autónomo</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-database"></i> Resumen de Datos
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Total de entradas:</strong> {{ total_entries }}</p>
+                        <p><strong>Fuentes de datos:</strong> {{ sources_count }}</p>
+                        <p><strong>Última actualización:</strong> {{ last_update }}</p>
+                        
+                        <div class="mt-3">
+                            <button id="btnRefreshData" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-sync-alt"></i> Actualizar Datos
+                            </button>
+                            <button id="btnForceCollection" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-robot"></i> Forzar Recolección
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-cog"></i> Control de Scraping
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>Estado:</strong></span>
+                                <span id="scraping-status" class="badge bg-danger">Inactivo</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><strong>Scraping Automático:</strong></span>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="scraping-toggle">
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <span><strong>Progreso:</strong></span>
+                                <div class="progress" style="height: 10px; margin: 8px 0;">
+                                    <div id="scraping-progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span id="progress-percentage" class="text-muted">0%</span>
+                            </div>
+                            
+                            <div class="mt-2 text-muted small">
+                                <span><strong>Última ejecución:</strong></span>
+                                <span id="last-run-time">Nunca</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <ul class="nav nav-tabs mb-4" id="categoryTabs" role="tablist">
+            {% for category in categories %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if loop.first %}active{% endif %}" 
+                        id="{{ category }}-tab" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#{{ category }}" 
+                        type="button" 
+                        role="tab" 
+                        aria-controls="{{ category }}" 
+                        aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
+                    {{ category|capitalize }}
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <div class="tab-content" id="categoryTabsContent">
+            {% for category, entries in data.items() %}
+            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" 
+                 id="{{ category }}" 
+                 role="tabpanel" 
+                 aria-labelledby="{{ category }}-tab">
+                
+                <div class="mb-3">
+                    <h6>Descargar datos de {{ category|capitalize }}:</h6>
+                    <div class="btn-group" role="group">
+                        <a href="/api/download/json/{{ category }}" class="btn btn-primary btn-sm" target="_blank">
+                            <i class="fas fa-file-code"></i> JSON
+                        </a>
+                        <a href="/api/download/csv/{{ category }}" class="btn btn-success btn-sm" target="_blank">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </a>
+                        <a href="/api/download/txt/{{ category }}" class="btn btn-secondary btn-sm" target="_blank">
+                            <i class="fas fa-file-alt"></i> TXT
+                        </a>
+                    </div>
+                </div>
+                
+                {% if entries %}
+                    {% for entry in entries %}
+                    <div class="data-card">
+                        <div class="category-heading d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Entrada #{{ loop.index }}</h5>
+                            <span class="timestamp">{{ entry.timestamp }}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Fuente:</strong> {{ entry.source }}</p>
+                            <div class="data-content">
+                                {% if entry.data is defined %}
+                                <pre>{{ entry.data|tojson(indent=2) }}</pre>
+                                {% else %}
+                                <pre>Datos no disponibles o no serializables</pre>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        No hay datos disponibles para la categoría "{{ category }}".
+                    </div>
+                {% endif %}
+                
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="mt-3">
+            <h6>Descargar todos los datos:</h6>
+            <div class="btn-group" role="group">
+                <a href="/api/download/json/all" class="btn btn-primary btn-sm" target="_blank">
+                    <i class="fas fa-file-code"></i> JSON
+                </a>
+                <a href="/api/download/txt/all" class="btn btn-secondary btn-sm" target="_blank">
+                    <i class="fas fa-file-alt"></i> TXT
+                </a>
+            </div>
+            <p class="mt-2 small text-muted">
+                <i class="fas fa-info-circle"></i> Los datos en formato JSON son ideales para compartir con IAs y herramientas automatizadas.
+            </p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejar el botón de actualizar datos
+            document.getElementById('btnRefreshData').addEventListener('click', function() {
+                window.location.reload();
+            });
+            
+            // Manejar el botón de forzar recolección
+            document.getElementById('btnForceCollection').addEventListener('click', function() {
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                
+                // Llamar a la API para forzar la recolección de datos
+                fetch('/api/force_collection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('La recolección de datos ha comenzado. Este proceso puede tardar unos minutos.');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 5000);
+                    } else {
+                        alert('Error: ' + data.error);
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-robot"></i> Forzar Recolección';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al comunicarse con el servidor');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-robot"></i> Forzar Recolección';
+                });
+            });
+            
+            // Formatear las fechas
+            document.querySelectorAll('.timestamp').forEach(function(element) {
+                try {
+                    const date = new Date(element.textContent);
+                    if (!isNaN(date)) {
+                        element.textContent = date.toLocaleString();
+                    }
+                } catch (e) {
+                    console.error('Error al formatear fecha:', e);
+                }
+            });
+            
+            // Funcionalidad para el control de scraping
+            const scrapingToggle = document.getElementById('scraping-toggle');
+            const scrapingStatus = document.getElementById('scraping-status');
+            const progressBar = document.getElementById('scraping-progress-bar');
+            const progressPercentage = document.getElementById('progress-percentage');
+            const lastRunTime = document.getElementById('last-run-time');
+            
+            // Función para formatear la fecha
+            function formatDateTime(isoString) {
+                if (!isoString) return 'Nunca';
+                try {
+                    const date = new Date(isoString);
+                    return date.toLocaleString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch (error) {
+                    console.error('Error al formatear fecha:', error);
+                    return 'Fecha inválida';
+                }
+            }
+            
+            // Función para actualizar la UI basado en el estado
+            function updateScrapingUI(status) {
+                console.log('Actualizando UI con estado:', status);
+                
+                if (scrapingToggle) scrapingToggle.checked = status.isActive;
+                
+                if (scrapingStatus) {
+                    scrapingStatus.textContent = status.isActive ? 'Activo' : 'Inactivo';
+                    scrapingStatus.style.color = status.isActive ? '#28a745' : '#dc3545';
+                }
+                
+                if (progressBar) progressBar.style.width = `${status.progress}%`;
+                if (progressPercentage) progressPercentage.textContent = `${status.progress}%`;
+                
+                if (lastRunTime) lastRunTime.textContent = formatDateTime(status.lastRun);
+            }
+            
+            // Función para obtener el estado del scraping
+            function getScrapingStatus() {
+                console.log('Obteniendo estado del scraping...');
+                
+                fetch('/api/scraping_status')
+                    .then(response => response.json())
+                    .then(status => {
+                        console.log('Estado obtenido:', status);
+                        updateScrapingUI(status);
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener estado del scraping:', error);
+                    });
+            }
+            
+            // Función para cambiar el estado del scraping
+            function toggleScraping(active) {
+                console.log('Cambiando estado del scraping a:', active);
+                
+                fetch('/api/toggle_scraping', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ active: active })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Respuesta del toggle:', data);
+                    
+                    if (data.success) {
+                        updateScrapingUI(data);
+                    } else {
+                        console.error('Error al cambiar estado del scraping:', data.error);
+                        // Revertir el toggle en caso de error
+                        if (scrapingToggle) scrapingToggle.checked = !active;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud de toggle:', error);
+                    // Revertir el toggle en caso de error
+                    if (scrapingToggle) scrapingToggle.checked = !active;
+                });
+            }
+            
+            // Event listener para el toggle
+            if (scrapingToggle) {
+                scrapingToggle.addEventListener('change', function() {
+                    toggleScraping(this.checked);
+                });
+            }
+            
+            // Obtener estado inicial
+            getScrapingStatus();
+            
+            // Actualizar estado cada 5 segundos
+            setInterval(getScrapingStatus, 5000);
+        });
+    </script>
+</body>
+</html>

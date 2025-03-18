@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Virtual Ibiza</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --dark-color: #121212;
+            --darker-color: #0a0a0a;
+            --text-color: #fff;
+            --accent-color: #26c6da;
+            --header-height: 50px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-image: url('https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Estilos de la barra superior */
+        .top-bar {
+            background-color: rgba(0, 0, 0, 0.8);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            position: relative;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .logo img {
+            height: 30px;
+            margin-right: 8px;
+        }
+        
+        .top-menu {
+            display: flex;
+        }
+        
+        .top-menu a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        
+        .top-menu a:hover, 
+        .top-menu a.active {
+            opacity: 1;
+        }
+        
+        .top-menu a.active {
+            color: var(--accent-color);
+        }
+        
+        .top-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-icon {
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        
+        .theme-toggle {
+            cursor: pointer;
+        }
+        
+        /* Contenedor principal */
+        .main-container {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - var(--header-height));
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Overlay oscuro para el fondo */
+        .dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+        
+        /* Ventana del Asistente Virtual */
+        .chat-window {
+            width: 600px;
+            max-width: 90%;
+            margin: 20px auto;
+            background-color: rgba(18, 18, 18, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 5;
+        }
+        
+        /* Cabecera del Asistente */
+        .chat-header {
+            background-color: rgba(36, 36, 36, 0.9);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .chat-header h2 {
+            color: var(--accent-color);
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        /* Contenedor de mensajes */
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 250px;
+            max-height: 400px;
+        }
+        
+        /* Estilos para mensajes */
+        .message {
+            max-width: 85%;
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 20px;
+            position: relative;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background-color: var(--primary-color);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .assistant-message {
+            background-color: #333;
+            color: #fff;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .bot-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .bot-avatar {
+            width: 30px;
+            height: 30px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+        }
+        
+        .bot-name {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        /* Sección de sugerencias */
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .suggestion-button {
+            background-color: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.5);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 13px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .suggestion-button:hover {
+            background-color: rgba(52, 152, 219, 0.4);
+        }
+        
+        /* Caja de entrada de mensaje */
+        .input-container {
+            padding: 15px 20px;
+            background-color: rgba(36, 36, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 30px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .send-button {
+            margin-left: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: white;
+        }
+        
+        /* Estilos para la sección de procesamiento de URL */
+        .url-processing {
+            background-color: rgba(36, 36, 36, 0.9);
+            padding: 15px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+        
+        .url-input-container {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .process-button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .expand-url-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        
+        .system-message {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            align-self: center;
+            font-size: 13px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .assistant-message.success {
+            background-color: rgba(46, 204, 113, 0.8);
+        }
+        
+        .assistant-message.error {
+            background-color: rgba(231, 76, 60, 0.8);
+        }
+        
+        /* Estilos responsivos */
+        @media (max-width: 768px) {
+            .chat-window {
+                width: 95%;
+                margin: 10px auto;
+                height: calc(100vh - var(--header-height) - 20px);
+            }
+            
+            .messages-container {
+                max-height: none;
+            }
+            
+            .top-menu a span {
+                display: none;
+            }
+            
+            .suggestions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra superior -->
+    <div class="top-bar">
+        <a href="/" class="logo">
+            <img src="https://via.placeholder.com/30/3498db/ffffff?text=IB" alt="Logo">
+            IBIZA INFO
+        </a>
+        
+        <div class="top-menu">
+            <a href="#" class="active">Inicio</a>
+            <a href="#">Archivos</a>
+            <a href="#">Vídeos</a>
+            <a href="#">Imágenes</a>
+            <a href="/archon-scraper">Agente IA</a>
+            <a href="#">Test</a>
+        </div>
+        
+        <div class="top-right">
+            <div class="search-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenedor principal -->
+    <div class="main-container">
+        <!-- Overlay oscuro para el fondo -->
+        <div class="dark-overlay"></div>
+        
+        <!-- Ventana de chat -->
+        <div class="chat-window">
+            <div class="chat-header">
+                <h2>Asistente Virtual Ibiza</h2>
+            </div>
+            
+            <!-- Contenedor de mensajes -->
+            <div class="messages-container" id="messages-container">
+                <!-- Los mensajes se añadirán aquí dinámicamente -->
+            </div>
+            
+            <!-- Sugerencias rápidas -->
+            <div class="suggestions">
+                <div class="suggestion-button" data-question="¿Qué fiestas hay en Ibiza?">¿Qué fiestas hay en Ibiza?</div>
+                <div class="suggestion-button" data-question="¿Cuáles son las mejores playas?">¿Cuáles son las mejores playas?</div>
+                <div class="suggestion-button" data-question="¿Cómo llegar en Ibiza?">¿Cómo llegar en Ibiza?</div>
+            </div>
+            
+            <!-- Contenedor de entrada de mensaje -->
+            <div class="input-container">
+                <input type="text" id="user-input" class="message-input" placeholder="Escribe tu mensaje aquí...">
+                <button id="send-button" class="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <!-- Sección para procesar URL (inicialmente oculta) -->
+            <div class="url-processing" id="url-processing">
+                <div class="url-input-container">
+                    <input type="text" id="url-input" class="url-input" placeholder="Pega aquí la URL...">
+                    <button id="process-url-btn" class="process-button">Procesar</button>
+                </div>
+            </div>
+            
+            <!-- Botón para expandir/colapsar la sección de URL -->
+            <div class="expand-url-section" id="expand-url">
+                <span id="expand-text">Enseñar al asistente con URL</span>
+                <i class="fas fa-chevron-down" id="expand-icon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Referencias a elementos DOM
+        const messagesContainer = document.getElementById('messages-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const urlInput = document.getElementById('url-input');
+        const processUrlBtn = document.getElementById('process-url-btn');
+        const expandUrlSection = document.getElementById('expand-url');
+        const urlProcessing = document.getElementById('url-processing');
+        const expandText = document.getElementById('expand-text');
+        const expandIcon = document.getElementById('expand-icon');
+        const suggestionButtons = document.querySelectorAll('.suggestion-button');
+
+        // Variable para controlar si la sección de URL está expandida
+        let urlSectionExpanded = false;
+        
+        // Mensaje de bienvenida inicial
+        window.addEventListener('load', function() {
+            const botMessage = {
+                avatar: true,
+                name: "Ibiza Bot",
+                text: "Hola, soy tu asistente virtual de Ibiza. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre playas, restaurantes, fiestas o cualquier otra información sobre la isla."
+            };
+            addBotMessage(botMessage);
+        });
+        
+        // Evento para expandir/colapsar la sección de URL
+        expandUrlSection.addEventListener('click', function() {
+            urlSectionExpanded = !urlSectionExpanded;
+            urlProcessing.style.display = urlSectionExpanded ? 'block' : 'none';
+            expandIcon.className = urlSectionExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+            expandText.textContent = urlSectionExpanded ? 'Ocultar' : 'Enseñar al asistente con URL';
+        });
+        
+        // Eventos de envío de mensaje
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Eventos para botones de sugerencia
+        suggestionButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const question = this.getAttribute('data-question');
+                userInput.value = question;
+                sendMessage();
+            });
+        });
+        
+        // Función para enviar mensaje
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            // Añadir mensaje del usuario al chat
+            addUserMessage(message);
+            userInput.value = '';
+            
+            // Enviar mensaje al servidor
+            fetch('/api/bot/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Añadir respuesta del asistente al chat
+                const botMessage = {
+                    avatar: true,
+                    name: "Ibiza Bot",
+                    text: data.response
+                };
+                
+                // Pequeña demora para simular tipeo
+                setTimeout(() => {
+                    addBotMessage(botMessage);
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addSystemMessage('Lo siento, ha ocurrido un error al procesar tu solicitud.');
+            });
+        }
+        
+        // Función para añadir mensaje del usuario
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            
+            // Auto-scroll
+            scrollToBottom();
+        }
+        
+        // Función para añadir mensaje del bot
+        function addBotMessage(message) {
+            const messageContainer = document.createElement('div');
+            
+            // Si se solicita avatar y nombre
+            if (message.avatar) {
+                const botInfoDiv = document.createElement('div');
+                botInfoDiv.className = 'bot-info';
+                
+                const botAvatarDiv = document.createElement('div');
+                botAvatarDiv.className = 'bot-avatar';
+                botAvatarDiv.innerHTML = '<i class="fas fa-robot"></i>';
+                
+                const botNameDiv = document.createElement('div');
+                botNameDiv.className = 'bot-name';
+                botNameDiv.textContent = message.name || 'Asistente';
+                
+                botInfoDiv.appendChild(botAvatarDiv);
+                botInfoDiv.appendChild(botNameDiv);
+                messageContainer.appendChild(botInfoDiv);
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant-message';
+            
+            if (message.class) {
+                messageDiv.classList.add(message.class);
+            }
+            
+            messageDiv.textContent = message.text;
+            messageContainer.appendChild(messageDiv);
+            
+            messagesContainer.appendChild(messageContainer);
+            
+            // Auto-scroll
+            scrollToBottom();
+        }
+        
+        // Función para añadir mensaje del sistema
+        function addSystemMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'system-message';
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            
+            // Auto-scroll
+            scrollToBottom();
+        }
+        
+        // Función para hacer auto-scroll
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Evento para procesar URL
+        processUrlBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (!url) return;
+            
+            // Mostrar mensaje de procesando
+            addSystemMessage(`Procesando URL: ${url}`);
+            
+            // Enviar URL al servidor
+            fetch('/api/bot/process-url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const botMessage = {
+                        avatar: true,
+                        name: "Ibiza Bot",
+                        text: data.message,
+                        class: 'success'
+                    };
+                    addBotMessage(botMessage);
+                    urlInput.value = '';
+                } else {
+                    const botMessage = {
+                        avatar: true,
+                        name: "Ibiza Bot",
+                        text: data.message,
+                        class: 'error'
+                    };
+                    addBotMessage(botMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addSystemMessage('Error al procesar la URL.');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imágenes - Ibiza InfoBot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ibiza_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .image-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .image-upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .upload-zone {
+            border: 3px dashed var(--highlight-color);
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-zone:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.01);
+        }
+        
+        .upload-zone i {
+            font-size: 48px;
+            color: var(--highlight-color);
+            margin-bottom: 15px;
+        }
+        
+        .image-preview {
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            text-align: center;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 450px;
+            border-radius: 10px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            font-size: 16px;
+        }
+        
+        .file-info {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--highlight-rgb), 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(var(--highlight-rgb), 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--highlight-rgb), 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-logo">
+                <i class="fas fa-umbrella-beach highlight-neon"></i>
+                <span class="logo-text">IBIZA INFO</span>
+            </div>
+            <span class="logo-subtitle">ASISTENTE DIGITAL</span>
+        </div>
+        
+        <div class="navbar-menu">
+            <a href="/" class="menu-item">Inicio</a>
+            <a href="/archivos" class="menu-item">Archivos</a>
+            <a href="/videos" class="menu-item">Videos</a>
+            <a href="/imagenes" class="menu-item active">Imágenes</a>
+            <a href="/test" class="menu-item test-link"><i class="fas fa-vial"></i> Test</a>
+        </div>
+        
+        <div class="navbar-search">
+            <input type="text" placeholder="Buscar..." class="search-input">
+            <button class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content">
+            <h1 class="section-title">Gestor de <span class="highlight-neon">Imágenes</span><div class="title-underline"></div></h1>
+            
+            <div class="image-container">
+                <h2>Subir y Guardar Imagen</h2>
+                
+                <div class="image-upload-form">
+                    <div class="upload-zone" id="drop-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Arrastra y suelta tu imagen aquí</h3>
+                        <p>O haz clic para seleccionar un archivo</p>
+                        <input type="file" id="image-input" accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <div class="file-info" id="file-info">
+                        <h4 id="file-name">Nombre del archivo</h4>
+                        <p id="file-size">Tamaño: 0 MB</p>
+                        <p id="file-type">Tipo: image/jpeg</p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn" id="save-btn" disabled>
+                            <i class="fas fa-save"></i> Guardar Imagen
+                        </button>
+                    </div>
+                </div>
+                
+                <h2>Previsualización</h2>
+                
+                <div class="image-preview" id="image-preview">
+                    <img id="preview-image" alt="Previsualización de la imagen">
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn" id="download-btn" disabled>
+                        <i class="fas fa-download"></i> Descargar Imagen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/ibiza_script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ibiza_decorations.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Image Manager cargado correctamente - Actualizado 08:34');
+            
+            const dropArea = document.getElementById('drop-area');
+            const imageInput = document.getElementById('image-input');
+            const saveBtn = document.getElementById('save-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const imagePreview = document.getElementById('image-preview');
+            const previewImage = document.getElementById('preview-image');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const fileSize = document.getElementById('file-size');
+            const fileType = document.getElementById('file-type');
+            
+            let currentFile = null;
+            
+            // Prevenir comportamiento por defecto
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Resaltar área al arrastrar
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('pulse-animation');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('pulse-animation');
+            }
+            
+            // Manejar caída de archivos
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    handleFiles(files);
+                }
+            }
+            
+            // Manejar selección de archivos al hacer clic
+            dropArea.addEventListener('click', () => {
+                imageInput.click();
+            });
+            
+            imageInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    handleFiles(this.files);
+                }
+            });
+            
+            // Función para manejar los archivos
+            function handleFiles(files) {
+                if (files.length > 0) {
+                    const file = files[0]; // Solo usar el primer archivo si hay múltiples
+                    
+                    if (file.type.startsWith('image/')) {
+                        currentFile = file;
+                        updateFileInfo(file);
+                        showImagePreview(file);
+                        saveBtn.disabled = false;
+                    } else {
+                        showNotification('Solo se permiten archivos de imagen', 'error');
+                    }
+                }
+            }
+            
+            // Mostrar información del archivo
+            function updateFileInfo(file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = `Tamaño: ${formatFileSize(file.size)}`;
+                fileType.textContent = `Tipo: ${file.type}`;
+                fileInfo.style.display = 'block';
+            }
+            
+            // Mostrar previsualización de la imagen
+            function showImagePreview(file) {
+                const imageURL = URL.createObjectURL(file);
+                previewImage.src = imageURL;
+                imagePreview.style.display = 'block';
+                downloadBtn.disabled = false;
+            }
+            
+            // Guardar la imagen
+            saveBtn.addEventListener('click', function() {
+                if (!currentFile) return;
+                
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+                
+                // Simular una carga
+                setTimeout(() => {
+                    showNotification('Imagen guardada correctamente', 'success');
+                    saveBtn.innerHTML = '<i class="fas fa-check"></i> Guardada';
+                }, 1500);
+            });
+            
+            // Descargar la imagen
+            downloadBtn.addEventListener('click', function() {
+                if (!currentFile) return;
+                
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(currentFile);
+                a.download = currentFile.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                showNotification('Descarga iniciada', 'success');
+            });
+            
+            // Función para formatear el tamaño del archivo
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Función para mostrar notificaciones
+            function showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                
+                let icon = '';
+                switch (type) {
+                    case 'success':
+                        icon = '<i class="fas fa-check-circle"></i>';
+                        break;
+                    case 'error':
+                        icon = '<i class="fas fa-exclamation-circle"></i>';
+                        break;
+                    case 'info':
+                        icon = '<i class="fas fa-info-circle"></i>';
+                        break;
+                }
+                
+                notification.innerHTML = `
+                    ${icon}
+                    <span>${message}</span>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Estilos para la notificación si no están definidos en los estilos globales
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.right = '20px';
+                notification.style.backgroundColor = type === 'success' ? '#4CAF50' : 
+                                                     type === 'error' ? '#F44336' : '#2196F3';
+                notification.style.color = 'white';
+                notification.style.padding = '15px 20px';
+                notification.style.borderRadius = '5px';
+                notification.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                notification.style.display = 'flex';
+                notification.style.alignItems = 'center';
+                notification.style.gap = '10px';
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                notification.style.transition = 'all 0.3s ease';
+                notification.style.zIndex = '9999';
+                
+                // Animación de entrada
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                    notification.style.opacity = '1';
+                }, 10);
+                
+                // Eliminar después de un tiempo
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    notification.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

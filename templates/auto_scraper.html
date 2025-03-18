@@ -1,0 +1,811 @@
+{% extends 'base.html' %}
+
+{% block title %}Control de Auto-Scraping{% endblock %}
+
+{% block extra_head %}
+<!-- Estilos adicionales para la interfaz de auto-scraper -->
+<style>
+    .progress {
+        height: 10px;
+        margin: 8px 0;
+    }
+    .card {
+        margin-bottom: 20px;
+    }
+    .search-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .search-item:last-child {
+        border-bottom: none;
+    }
+    .badge {
+        font-size: 0.8em;
+    }
+    .database-status {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+    .db-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .db-table th, .db-table td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    .db-table tr:hover {
+        background-color: #f5f5f5;
+    }
+    .db-info {
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Control de Auto-Scraping</h1>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i> El auto-scraper te permite automatizar la extracción de información de diferentes sitios web sobre Ibiza y almacenarla en tu base de conocimiento.
+    </div>
+    
+    <div class="row">
+        <!-- Panel de Control principal -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-cogs me-2"></i> Panel de Control
+                </div>
+                <div class="card-body">
+                    <!-- Estado del Servicio -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5><i class="fas fa-power-off me-2"></i> Estado del Servicio</h5>
+                            <p class="text-muted">Activa/desactiva el scraping automático</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="serviceToggle">
+                            <label class="form-check-label" for="serviceToggle">
+                                <span id="serviceStatus" class="badge bg-danger">Inactivo</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Estadísticas -->
+                    <h5 class="mt-4 mb-3"><i class="fas fa-chart-bar me-2"></i> Estadísticas</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h2 id="totalRequests">0</h2>
+                                    <p class="mb-0">Peticiones</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h2 id="totalSources">0</h2>
+                                    <p class="mb-0">Fuentes</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h2 id="totalResults">0</h2>
+                                    <p class="mb-0">Resultados</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Acciones Principales -->
+                    <h5 class="mt-4 mb-3"><i class="fas fa-tasks me-2"></i> Acciones</h5>
+                    <div class="d-grid gap-2">
+                        <button id="runTestBtn" class="btn btn-success">
+                            <i class="fas fa-vial me-2"></i> Ejecutar Prueba
+                        </button>
+                        <button id="updateSourcesBtn" class="btn btn-info">
+                            <i class="fas fa-sync me-2"></i> Actualizar Fuentes
+                        </button>
+                        <button id="clearCacheBtn" class="btn btn-warning">
+                            <i class="fas fa-trash me-2"></i> Limpiar Caché
+                        </button>
+                    </div>
+                    
+                    <!-- Nueva sección: Conexión con Base de Datos -->
+                    <div class="mt-4">
+                        <h5 class="mb-3"><i class="fas fa-database me-2"></i> Base de Conocimiento</h5>
+                        <div class="database-status" id="dbStatus">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong>Estado de la base de datos:</strong>
+                                <span id="dbStatusBadge" class="badge bg-secondary">Verificando...</span>
+                            </div>
+                            <div class="db-info">
+                                <table class="db-table">
+                                    <tr>
+                                        <th>Categoría</th>
+                                        <th>Entradas</th>
+                                        <th>Última actualización</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Playas</td>
+                                        <td id="beachCount">-</td>
+                                        <td id="beachUpdate">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Restaurantes</td>
+                                        <td id="restaurantCount">-</td>
+                                        <td id="restaurantUpdate">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Eventos</td>
+                                        <td id="eventCount">-</td>
+                                        <td id="eventUpdate">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Discotecas</td>
+                                        <td id="clubCount">-</td>
+                                        <td id="clubUpdate">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="d-grid gap-2 mt-3">
+                                <button id="syncKnowledgeBase" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-sync me-2"></i> Sincronizar Base de Conocimiento
+                                </button>
+                                <button id="testQueryKnowledge" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-search me-2"></i> Probar Consulta a Base de Conocimiento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Consola de Logs -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-terminal me-2"></i> Consola de Logs
+                </div>
+                <div class="card-body bg-light">
+                    <div id="logConsole" class="p-3 bg-dark text-light" style="height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
+                        <!-- Los logs se mostrarán aquí -->
+                        <div class="log-line">[INFO] Sistema iniciado. Esperando acciones...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel de Búsquedas -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-search me-2"></i> Búsquedas Configuradas
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5 class="mb-0">Búsquedas para Google y Otros Portales</h5>
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSearchModal">
+                            <i class="fas fa-plus"></i> Añadir
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <ul id="searches-list" class="list-group">
+                            <li class="list-group-item text-center text-muted">
+                                No hay búsquedas configuradas
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button id="test-search" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#testSearchModal">
+                            <i class="fas fa-flask me-2"></i> Probar Búsqueda
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel de Resultados -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-chart-bar me-2"></i> Resultados del Scraping
+                </div>
+                <div id="scraping-results-container" class="card-body" style="display: none;">
+                    <p class="text-center text-muted">No hay resultados disponibles</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de Exportación de Datos -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-file-export me-2"></i> Exportar Datos para IA
+                </div>
+                <div class="card-body">
+                    <p>Descarga los datos recopilados para utilizarlos en otras IAs o sistemas:</p>
+                    
+                    <form id="export-form" class="mb-3">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="export-category" class="form-label">Categoría</label>
+                                <select id="export-category" class="form-select">
+                                    <option value="all">Todos los datos</option>
+                                    <option value="events">Eventos</option>
+                                    <option value="tickets">Tickets</option>
+                                    <option value="venues">Locales</option>
+                                    <option value="beaches">Playas</option>
+                                    <option value="restaurants">Restaurantes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="export-format" class="form-label">Formato</label>
+                                <select id="export-format" class="form-select">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="txt">TXT</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="button" id="export-data-btn" class="btn btn-success">
+                                <i class="fas fa-download me-2"></i> Descargar Datos
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Añadir Búsqueda -->
+<div class="modal fade" id="addSearchModal" tabindex="-1" aria-labelledby="addSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSearchModalLabel">Añadir Nueva Búsqueda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-search-form">
+                    <div class="mb-3">
+                        <label for="search-name" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="search-name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-query" class="form-label">Consulta de Búsqueda</label>
+                        <input type="text" class="form-control" id="search-query" name="query" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-category" class="form-label">Categoría</label>
+                        <select class="form-select" id="search-category" name="category" required>
+                            <option value="">Seleccionar categoría...</option>
+                            <option value="events">Eventos</option>
+                            <option value="tickets">Tickets</option>
+                            <option value="venues">Locales</option>
+                            <option value="beaches">Playas</option>
+                            <option value="restaurants">Restaurantes</option>
+                            <option value="hotels">Hoteles</option>
+                            <option value="activities">Actividades</option>
+                            <option value="transport">Transporte</option>
+                            <option value="weather">Clima</option>
+                            <option value="faq">FAQ</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-engine" class="form-label">Motor de Búsqueda</label>
+                        <select class="form-select" id="search-engine" name="engine">
+                            <option value="google">Google</option>
+                            <option value="bing">Bing</option>
+                            <option value="octoparse">Octoparse</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="search-max-results" class="form-label">Máx. Resultados</label>
+                            <input type="number" class="form-control" id="search-max-results" name="max_results" min="1" max="20" value="5">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="search-max-depth" class="form-label">Profundidad</label>
+                            <input type="number" class="form-control" id="search-max-depth" name="max_depth" min="1" max="3" value="1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="search-frequency" class="form-label">Frecuencia de Actualización</label>
+                        <select class="form-select" id="search-frequency" name="frequency" required>
+                            <option value="daily">Diaria</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly">Mensual</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Búsqueda</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Test de Búsqueda -->
+<div class="modal fade" id="testSearchModal" tabindex="-1" aria-labelledby="testSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="testSearchModalLabel">Probar Búsqueda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="test-search-select" class="form-label">Selecciona una búsqueda para probar:</label>
+                    <select class="form-select" id="test-search-select">
+                        <!-- Se llenará dinámicamente con JavaScript -->
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="run-test-search" class="btn btn-primary">Ejecutar Prueba</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Script para el auto-scraper -->
+<script src="{{ url_for('static', filename='js/auto_scraper.js') }}"></script>
+
+<script>
+// Cuando se presiona el botón de exportar datos
+document.getElementById('export-data-btn').addEventListener('click', function() {
+    const category = document.getElementById('export-category').value;
+    const format = document.getElementById('export-format').value;
+    
+    // Llamar a la función de exportación
+    exportScrapedData(format, category);
+});
+
+// Cuando se presiona el botón de ejecutar prueba en el modal
+document.getElementById('run-test-search').addEventListener('click', function() {
+    // Cerrar el modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('testSearchModal'));
+    modal.hide();
+    
+    // Ejecutar la prueba de búsqueda
+    testSearch();
+});
+
+// Actualizar el selector de búsquedas para pruebas cuando se carga el modal
+document.getElementById('testSearchModal').addEventListener('show.bs.modal', function() {
+    const searchSelect = document.getElementById('test-search-select');
+    
+    // Limpiar opciones actuales
+    searchSelect.innerHTML = '';
+    
+    // Si tenemos búsquedas configuradas, añadirlas al selector
+    if (scraperStatus.searches && scraperStatus.searches.length > 0) {
+        scraperStatus.searches.forEach(search => {
+            const option = document.createElement('option');
+            option.value = search.name;
+            option.textContent = search.name + ' - ' + search.query;
+            searchSelect.appendChild(option);
+        });
+    } else {
+        // Si no hay búsquedas, mostrar opción por defecto
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No hay búsquedas disponibles';
+        option.disabled = true;
+        option.selected = true;
+        searchSelect.appendChild(option);
+    }
+});
+
+// Eventos del DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicialización de elementos UI
+    const serviceToggle = document.getElementById('serviceToggle');
+    const serviceStatus = document.getElementById('serviceStatus');
+    const runTestBtn = document.getElementById('runTestBtn');
+    const updateSourcesBtn = document.getElementById('updateSourcesBtn');
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    const logConsole = document.getElementById('logConsole');
+    const syncKnowledgeBase = document.getElementById('syncKnowledgeBase');
+    const testQueryKnowledge = document.getElementById('testQueryKnowledge');
+    
+    // Inicializar contador de estadísticas
+    updateStatistics();
+    
+    // Inicializar estado de la base de datos
+    updateDatabaseStatus();
+    
+    // Event listeners para botones de acción
+    if (serviceToggle) {
+        serviceToggle.addEventListener('change', function() {
+            toggleScraperService(this.checked);
+        });
+    }
+    
+    if (runTestBtn) {
+        runTestBtn.addEventListener('click', runTestProcess);
+    }
+    
+    if (updateSourcesBtn) {
+        updateSourcesBtn.addEventListener('click', updateSources);
+    }
+    
+    if (clearCacheBtn) {
+        clearCacheBtn.addEventListener('click', clearCache);
+    }
+    
+    if (syncKnowledgeBase) {
+        syncKnowledgeBase.addEventListener('click', synchronizeKnowledgeBase);
+    }
+    
+    if (testQueryKnowledge) {
+        testQueryKnowledge.addEventListener('click', testKnowledgeBaseQuery);
+    }
+    
+    // Añadir log inicial
+    addLog('Sistema inicializado correctamente');
+    
+    // Actualizar estado cada 10 segundos
+    setInterval(updateScraperStatus, 10000);
+    setInterval(updateStatistics, 30000);
+    setInterval(updateDatabaseStatus, 60000);
+});
+
+// Función para añadir log a la consola
+function addLog(message, type = 'info') {
+    const logConsole = document.getElementById('logConsole');
+    if (!logConsole) return;
+    
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+    let logClass = '';
+    let prefix = '';
+    
+    switch (type) {
+        case 'error':
+            logClass = 'text-danger';
+            prefix = '[ERROR]';
+            break;
+        case 'warning':
+            logClass = 'text-warning';
+            prefix = '[WARN]';
+            break;
+        case 'success':
+            logClass = 'text-success';
+            prefix = '[OK]';
+            break;
+        default:
+            logClass = 'text-info';
+            prefix = '[INFO]';
+    }
+    
+    const logLine = document.createElement('div');
+    logLine.className = `log-line ${logClass}`;
+    logLine.textContent = `${timeStr} ${prefix} ${message}`;
+    
+    logConsole.appendChild(logLine);
+    logConsole.scrollTop = logConsole.scrollHeight;
+    
+    // Limitar el número de logs para no consumir demasiada memoria
+    while (logConsole.children.length > 100) {
+        logConsole.removeChild(logConsole.firstChild);
+    }
+}
+
+// Función para actualizar la estadísticas
+function updateStatistics() {
+    fetch('/api/auto_scraper/stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('totalRequests').textContent = data.stats.requests || 0;
+                document.getElementById('totalSources').textContent = data.stats.sources || 0;
+                document.getElementById('totalResults').textContent = data.stats.results || 0;
+            } else {
+                addLog('Error al obtener estadísticas: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            addLog('Error de conexión: ' + error, 'error');
+        });
+}
+
+// Función para actualizar el estado del scraper
+function updateScraperStatus() {
+    fetch('/api/auto_scraper/status')
+        .then(response => response.json())
+        .then(data => {
+            const serviceToggle = document.getElementById('serviceToggle');
+            const serviceStatus = document.getElementById('serviceStatus');
+            
+            if (data.success && data.active) {
+                if (serviceToggle) serviceToggle.checked = true;
+                if (serviceStatus) {
+                    serviceStatus.textContent = 'Activo';
+                    serviceStatus.className = 'badge bg-success';
+                }
+            } else {
+                if (serviceToggle) serviceToggle.checked = false;
+                if (serviceStatus) {
+                    serviceStatus.textContent = 'Inactivo';
+                    serviceStatus.className = 'badge bg-danger';
+                }
+            }
+        })
+        .catch(error => {
+            addLog('Error al obtener estado: ' + error, 'error');
+        });
+}
+
+// Función para activar/desactivar el servicio de scraping
+function toggleScraperService(active) {
+    addLog(`${active ? 'Activando' : 'Desactivando'} servicio de scraping...`);
+    
+    fetch('/api/auto_scraper/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ active: active })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addLog(`Servicio de scraping ${active ? 'activado' : 'desactivado'} correctamente`, 'success');
+            updateScraperStatus();
+        } else {
+            addLog('Error al cambiar estado: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLog('Error de conexión: ' + error, 'error');
+    });
+}
+
+// Función para ejecutar una prueba de scraping
+function runTestProcess() {
+    addLog('Ejecutando prueba de scraping...');
+    
+    fetch('/api/auto_scraper/test', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addLog('Prueba ejecutada correctamente', 'success');
+            if (data.results && data.results.length > 0) {
+                addLog(`Resultados obtenidos: ${data.results.length}`);
+                showResults(data.results);
+            } else {
+                addLog('No se encontraron resultados');
+            }
+        } else {
+            addLog('Error al ejecutar prueba: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLog('Error de conexión: ' + error, 'error');
+    });
+}
+
+// Función para actualizar las fuentes de scraping
+function updateSources() {
+    addLog('Actualizando fuentes...');
+    
+    fetch('/api/auto_scraper/update_sources', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addLog('Fuentes actualizadas correctamente', 'success');
+            addLog(`Fuentes actuales: ${data.sources.length}`);
+            updateStatistics();
+        } else {
+            addLog('Error al actualizar fuentes: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLog('Error de conexión: ' + error, 'error');
+    });
+}
+
+// Función para limpiar caché
+function clearCache() {
+    addLog('Limpiando caché...');
+    
+    fetch('/api/auto_scraper/clear_cache', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addLog('Caché limpiada correctamente', 'success');
+        } else {
+            addLog('Error al limpiar caché: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLog('Error de conexión: ' + error, 'error');
+    });
+}
+
+// Función para mostrar resultados
+function showResults(results) {
+    const container = document.getElementById('scraping-results-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    container.style.display = 'block';
+    
+    if (results.length === 0) {
+        container.innerHTML = '<p class="text-center text-muted">No hay resultados disponibles</p>';
+        return;
+    }
+    
+    const resultsList = document.createElement('div');
+    resultsList.className = 'list-group';
+    
+    results.forEach((result, index) => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        
+        const title = document.createElement('h6');
+        title.textContent = result.title || `Resultado ${index + 1}`;
+        
+        const content = document.createElement('p');
+        content.className = 'mb-1 text-muted';
+        content.textContent = result.content ? result.content.substring(0, 150) + '...' : 'Sin contenido';
+        
+        const metaInfo = document.createElement('div');
+        metaInfo.className = 'small text-muted';
+        metaInfo.innerHTML = `
+            <strong>Fuente:</strong> ${result.source || 'Desconocida'} |
+            <strong>URL:</strong> <a href="${result.url || '#'}" target="_blank">${result.url || 'No disponible'}</a>
+        `;
+        
+        item.appendChild(title);
+        item.appendChild(content);
+        item.appendChild(metaInfo);
+        resultsList.appendChild(item);
+    });
+    
+    container.appendChild(resultsList);
+}
+
+// Función para actualizar el estado de la base de datos
+function updateDatabaseStatus() {
+    fetch('/api/knowledge_base/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const dbStatusBadge = document.getElementById('dbStatusBadge');
+                if (dbStatusBadge) {
+                    dbStatusBadge.textContent = data.connected ? 'Conectada' : 'Desconectada';
+                    dbStatusBadge.className = data.connected ? 'badge bg-success' : 'badge bg-danger';
+                }
+                
+                // Actualizar contadores de categorías
+                if (data.categories) {
+                    if (data.categories.beaches) {
+                        document.getElementById('beachCount').textContent = data.categories.beaches.count || '-';
+                        document.getElementById('beachUpdate').textContent = formatDatetime(data.categories.beaches.last_update);
+                    }
+                    
+                    if (data.categories.restaurants) {
+                        document.getElementById('restaurantCount').textContent = data.categories.restaurants.count || '-';
+                        document.getElementById('restaurantUpdate').textContent = formatDatetime(data.categories.restaurants.last_update);
+                    }
+                    
+                    if (data.categories.events) {
+                        document.getElementById('eventCount').textContent = data.categories.events.count || '-';
+                        document.getElementById('eventUpdate').textContent = formatDatetime(data.categories.events.last_update);
+                    }
+                    
+                    if (data.categories.clubs) {
+                        document.getElementById('clubCount').textContent = data.categories.clubs.count || '-';
+                        document.getElementById('clubUpdate').textContent = formatDatetime(data.categories.clubs.last_update);
+                    }
+                }
+                
+                addLog('Estado de la base de datos actualizado', 'success');
+            } else {
+                addLog('Error al obtener estado de la BD: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            addLog('Error de conexión a la BD: ' + error, 'error');
+        });
+}
+
+// Función para sincronizar la base de conocimiento
+function synchronizeKnowledgeBase() {
+    addLog('Sincronizando base de conocimiento...');
+    
+    fetch('/api/knowledge_base/sync', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addLog('Base de conocimiento sincronizada correctamente', 'success');
+            addLog(`Elementos procesados: ${data.processed}`);
+            updateDatabaseStatus();
+        } else {
+            addLog('Error al sincronizar BD: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLog('Error de conexión: ' + error, 'error');
+    });
+}
+
+// Función para probar consulta a la base de conocimiento
+function testKnowledgeBaseQuery() {
+    // Mostrar un modal para ingresar la consulta
+    const query = prompt('Ingresa la consulta para probar la base de conocimiento:', 'mejores playas de Ibiza');
+    
+    if (query === null || query.trim() === '') {
+        return; // Usuario canceló o no ingresó nada
+    }
+    
+    addLog(`Probando consulta: "${query}"...`);
+    
+    fetch('/api/knowledge_base/query', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addLog('Consulta ejecutada correctamente', 'success');
+            if (data.results && data.results.length > 0) {
+                addLog(`Resultados encontrados: ${data.results.length}`);
+                showResults(data.results);
+            } else {
+                addLog('No se encontraron resultados para la consulta');
+            }
+        } else {
+            addLog('Error al ejecutar consulta: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        addLog('Error de conexión: ' + error, 'error');
+    });
+}
+
+// Función para formatear fechas
+function formatDatetime(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return dateStr;
+    }
+}
+</script>
+{% endblock %}
